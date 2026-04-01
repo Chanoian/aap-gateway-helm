@@ -1,0 +1,205 @@
+{{- /* ── Validate required fields ─────────────────────────────────────────── */}}
+{{- $_ := required "Values.namespace is required — set namespace in your values file" .Values.namespace -}}
+{{- $_ := required "Values.hostname is required — set hostname in your values file" .Values.hostname -}}
+
+{{- /* ── Build top-level spec dict ──────────────────────────────────────────
+     Using a dict means .Values.extraSpec can cleanly override any key
+     without duplicate-key issues in the rendered YAML.
+*/}}
+{{- $spec := dict
+    "hostname"                       .Values.hostname
+    "image_pull_policy"              (.Values.image_pull_policy | default "IfNotPresent")
+    "no_log"                         .Values.no_log
+    "idle_aap"                       .Values.idle_aap
+    "redis_mode"                     (.Values.redis_mode | default "standalone")
+    "route_tls_termination_mechanism" (.Values.route_tls_termination_mechanism | default "Edge")
+    "loadbalancer_port"              .Values.loadbalancer_port
+    "loadbalancer_protocol"          (.Values.loadbalancer_protocol | default "https")
+-}}
+
+{{- /* ── Optional scalar fields (omit when empty) ─────────────────────────── */}}
+{{- $optionalStrings := dict
+    "admin_password_secret"        .Values.admin_password_secret
+    "bundle_cacert_secret"         .Values.bundle_cacert_secret
+    "db_fields_encryption_secret"  .Values.db_fields_encryption_secret
+    "image"                        .Values.image
+    "image_version"                .Values.image_version
+    "postgres_image"               .Values.postgres_image
+    "postgres_image_version"       .Values.postgres_image_version
+    "redis_image"                  .Values.redis_image
+    "redis_image_version"          .Values.redis_image_version
+    "redhat_registry"              .Values.redhat_registry
+    "redhat_registry_ns"           .Values.redhat_registry_ns
+    "public_base_url"              .Values.public_base_url
+    "route_host"                   .Values.route_host
+    "route_tls_secret"             .Values.route_tls_secret
+    "ingress_type"                 .Values.ingress_type
+    "ingress_class_name"           .Values.ingress_class_name
+    "ingress_path"                 .Values.ingress_path
+    "ingress_path_type"            .Values.ingress_path_type
+    "ingress_tls_secret"           .Values.ingress_tls_secret
+    "service_type"                 .Values.service_type
+-}}
+{{- range $k, $v := $optionalStrings }}
+  {{- if $v }}{{- $_ := set $spec $k $v }}{{- end }}
+{{- end }}
+
+{{- /* ── Optional map fields (omit when empty) ─────────────────────────────── */}}
+{{- if .Values.route_annotations }}
+  {{- $_ := set $spec "route_annotations" .Values.route_annotations }}
+{{- end }}
+{{- if .Values.ingress_annotations }}
+  {{- $_ := set $spec "ingress_annotations" .Values.ingress_annotations }}
+{{- end }}
+{{- if .Values.service_annotations }}
+  {{- $_ := set $spec "service_annotations" .Values.service_annotations }}
+{{- end }}
+{{- if .Values.service_account_annotations }}
+  {{- $_ := set $spec "service_account_annotations" .Values.service_account_annotations }}
+{{- end }}
+{{- if .Values.feature_flags }}
+  {{- $_ := set $spec "feature_flags" .Values.feature_flags }}
+{{- end }}
+
+{{- /* ── Optional list fields (omit when empty) ────────────────────────────── */}}
+{{- if .Values.image_pull_secrets }}
+  {{- $_ := set $spec "image_pull_secrets" .Values.image_pull_secrets }}
+{{- end }}
+{{- if .Values.extra_settings }}
+  {{- $_ := set $spec "extra_settings" .Values.extra_settings }}
+{{- end }}
+
+{{- /* ── api sub-spec ─────────────────────────────────────────────────────── */}}
+{{- $api := dict
+    "replicas"  (.Values.api.replicas | default 1)
+    "log_level" (.Values.api.log_level | default "INFO")
+-}}
+{{- $apiRR := include "aap-gateway.resourceRequirements" .Values.api.resource_requirements | fromYaml }}
+{{- if gt (len $apiRR) 0 }}{{- $_ := set $api "resource_requirements" $apiRR }}{{- end }}
+{{- if .Values.api.node_selector }}{{- $_ := set $api "node_selector" .Values.api.node_selector }}{{- end }}
+{{- if .Values.api.tolerations }}{{- $_ := set $api "tolerations" .Values.api.tolerations }}{{- end }}
+{{- if .Values.api.topology_spread_constraints }}{{- $_ := set $api "topology_spread_constraints" .Values.api.topology_spread_constraints }}{{- end }}
+{{- if .Values.api.strategy }}{{- $_ := set $api "strategy" .Values.api.strategy }}{{- end }}
+{{- $_ := set $spec "api" $api }}
+
+{{- /* ── database sub-spec ───────────────────────────────────────────────── */}}
+{{- $db := dict
+    "postgres_data_volume_init"       .Values.database.postgres_data_volume_init
+    "postgres_keep_pvc_after_upgrade" .Values.database.postgres_keep_pvc_after_upgrade
+    "idle_disabled"                   .Values.database.idle_disabled
+-}}
+{{- $dbOptStrings := dict
+    "database_secret"                  .Values.database.database_secret
+    "postgres_storage_class"           .Values.database.postgres_storage_class
+    "postgres_ssl_mode"                .Values.database.postgres_ssl_mode
+    "postgres_init_container_commands" .Values.database.postgres_init_container_commands
+    "priority_class"                   .Values.database.priority_class
+-}}
+{{- range $k, $v := $dbOptStrings }}
+  {{- if $v }}{{- $_ := set $db $k $v }}{{- end }}
+{{- end }}
+{{- if .Values.database.postgres_extra_settings }}
+  {{- $_ := set $db "postgres_extra_settings" .Values.database.postgres_extra_settings }}
+{{- end }}
+{{- $dbRR := include "aap-gateway.resourceRequirements" .Values.database.resource_requirements | fromYaml }}
+{{- if gt (len $dbRR) 0 }}{{- $_ := set $db "resource_requirements" $dbRR }}{{- end }}
+{{- $dbSR := include "aap-gateway.storageRequirements" .Values.database.storage_requirements | fromYaml }}
+{{- if gt (len $dbSR) 0 }}{{- $_ := set $db "storage_requirements" $dbSR }}{{- end }}
+{{- if .Values.database.node_selector }}{{- $_ := set $db "node_selector" .Values.database.node_selector }}{{- end }}
+{{- if .Values.database.tolerations }}{{- $_ := set $db "tolerations" .Values.database.tolerations }}{{- end }}
+{{- $_ := set $spec "database" $db }}
+
+{{- /* ── redis sub-spec ─────────────────────────────────────────────────── */}}
+{{- $redis := dict "replicas" (.Values.redis.replicas | default 1) }}
+{{- if .Values.redis.redis_secret }}{{- $_ := set $redis "redis_secret" .Values.redis.redis_secret }}{{- end }}
+{{- if .Values.redis.eda_redis_secret }}{{- $_ := set $redis "eda_redis_secret" .Values.redis.eda_redis_secret }}{{- end }}
+{{- $redisRR := include "aap-gateway.resourceRequirements" .Values.redis.resource_requirements | fromYaml }}
+{{- if gt (len $redisRR) 0 }}{{- $_ := set $redis "resource_requirements" $redisRR }}{{- end }}
+{{- if .Values.redis.node_selector }}{{- $_ := set $redis "node_selector" .Values.redis.node_selector }}{{- end }}
+{{- if .Values.redis.tolerations }}{{- $_ := set $redis "tolerations" .Values.redis.tolerations }}{{- end }}
+{{- $_ := set $spec "redis" $redis }}
+
+{{- /* ── controller sub-spec ──────────────────────────────────────────────── */}}
+{{- $ctrl := dict "disabled" .Values.controller.disabled }}
+{{- if .Values.controller.extra_settings }}
+  {{- $_ := set $ctrl "extra_settings" .Values.controller.extra_settings }}
+{{- end }}
+{{- range $k, $v := .Values.controller.extraSpec }}
+  {{- $_ := set $ctrl $k $v }}
+{{- end }}
+{{- $_ := set $spec "controller" $ctrl }}
+
+{{- /* ── eda sub-spec ──────────────────────────────────────────────────────── */}}
+{{- $eda := dict "disabled" .Values.eda.disabled }}
+{{- if not .Values.eda.disabled }}
+  {{- if not .Values.eda.automation_server_url }}
+    {{- fail "eda.automation_server_url is required when eda.disabled=false" }}
+  {{- end }}
+  {{- $_ := set $eda "automation_server_url" .Values.eda.automation_server_url }}
+{{- end }}
+{{- if .Values.eda.extra_settings }}
+  {{- $_ := set $eda "extra_settings" .Values.eda.extra_settings }}
+{{- end }}
+{{- range $k, $v := .Values.eda.extraSpec }}
+  {{- $_ := set $eda $k $v }}
+{{- end }}
+{{- $_ := set $spec "eda" $eda }}
+
+{{- /* ── hub sub-spec ──────────────────────────────────────────────────────── */}}
+{{- $hub := dict "disabled" .Values.hub.disabled }}
+{{- if not .Values.hub.disabled }}
+  {{- $_ := set $hub "file_storage_size" (.Values.hub.file_storage_size | default "100Gi") }}
+  {{- $_ := set $hub "file_storage_access_mode" (.Values.hub.file_storage_access_mode | default "ReadWriteMany") }}
+  {{- if .Values.hub.file_storage_storage_class }}
+    {{- $_ := set $hub "file_storage_storage_class" .Values.hub.file_storage_storage_class }}
+  {{- end }}
+  {{- $_ := set $hub "content" (dict "replicas" (.Values.hub.content.replicas | default 1)) }}
+  {{- $_ := set $hub "worker" (dict "replicas" (.Values.hub.worker.replicas | default 1)) }}
+  {{- $_ := set $hub "gunicorn_api_workers" (.Values.hub.gunicorn_api_workers | default 1) }}
+  {{- $_ := set $hub "gunicorn_content_workers" (.Values.hub.gunicorn_content_workers | default 1) }}
+{{- end }}
+{{- range $k, $v := .Values.hub.extraSpec }}
+  {{- $_ := set $hub $k $v }}
+{{- end }}
+{{- $_ := set $spec "hub" $hub }}
+
+{{- /* ── lightspeed sub-spec ───────────────────────────────────────────────── */}}
+{{- $ls := dict "disabled" .Values.lightspeed.disabled }}
+{{- if not .Values.lightspeed.disabled }}
+  {{- if .Values.lightspeed.chatbot_config_secret_name }}
+    {{- $_ := set $ls "chatbot_config_secret_name" .Values.lightspeed.chatbot_config_secret_name }}
+  {{- end }}
+{{- end }}
+{{- range $k, $v := .Values.lightspeed.extraSpec }}
+  {{- $_ := set $ls $k $v }}
+{{- end }}
+{{- $_ := set $spec "lightspeed" $ls }}
+
+{{- /* ── mcp sub-spec ─────────────────────────────────────────────────────── */}}
+{{- $mcp := dict "disabled" .Values.mcp.disabled "allow_write_operations" .Values.mcp.allow_write_operations }}
+{{- if not .Values.mcp.disabled }}
+  {{- if .Values.mcp.image }}{{- $_ := set $mcp "image" .Values.mcp.image }}{{- end }}
+  {{- if .Values.mcp.image_version }}{{- $_ := set $mcp "image_version" .Values.mcp.image_version }}{{- end }}
+{{- end }}
+{{- range $k, $v := .Values.mcp.extraSpec }}
+  {{- $_ := set $mcp $k $v }}
+{{- end }}
+{{- $_ := set $spec "mcp" $mcp }}
+
+{{- /* ── top-level extraSpec override ────────────────────────────────────────
+     Iterating extraSpec and setting keys in $spec means these values
+     override anything set above without creating duplicate YAML keys.
+*/}}
+{{- range $k, $v := .Values.extraSpec }}
+  {{- $_ := set $spec $k $v }}
+{{- end }}
+---
+apiVersion: aap.ansible.com/v1alpha1
+kind: AnsibleAutomationPlatform
+metadata:
+  name: {{ .Values.name | default "aap" }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "aap-gateway.labels" . | nindent 4 }}
+spec:
+  {{- toYaml $spec | nindent 2 }}
