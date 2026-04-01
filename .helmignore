@@ -1,0 +1,8 @@
+# Patterns to exclude from the packaged chart
+.git/
+.github/
+.gitignore
+*.md
+docs/
+crds/
+ci/

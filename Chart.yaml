@@ -1,0 +1,16 @@
+apiVersion: v2
+name: aap-gateway
+description: Helm chart for deploying Ansible Automation Platform on Red Hat OpenShift
+type: application
+version: 0.1.0
+appVersion: "2.6"
+keywords:
+  - ansible
+  - automation
+  - aap
+  - openshift
+home: https://github.com/Chanoian/aap-gateway-helm
+sources:
+  - https://github.com/Chanoian/aap-gateway-helm
+maintainers:
+  - name: AAP Gateway Helm Chart Maintainers
