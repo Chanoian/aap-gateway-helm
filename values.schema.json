@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name":      { "type": "string" },
+    "namespace": { "type": "string" },
+    "image_pull_policy": {
+      "type": "string",
+      "enum": ["Always", "Never", "IfNotPresent"]
+    },
+    "image_pull_secrets": { "type": "array", "items": { "type": "string" } },
+    "no_log":    { "type": "boolean" },
+    "idle_aap":  { "type": "boolean" },
+    "redis_mode": {
+      "type": "string",
+      "enum": ["standalone", "cluster"]
+    },
+    "image":               { "type": "string" },
+    "image_version":       { "type": "string" },
+    "postgres_image":      { "type": "string" },
+    "postgres_image_version": { "type": "string" },
+    "redis_image":         { "type": "string" },
+    "redis_image_version": { "type": "string" },
+    "redhat_registry":     { "type": "string" },
+    "redhat_registry_ns":  { "type": "string" },
+    "admin_password_secret":      { "type": "string" },
+    "bundle_cacert_secret":       { "type": "string" },
+    "db_fields_encryption_secret": { "type": "string" },
+    "hostname":      { "type": "string" },
+    "public_base_url": { "type": "string" },
+    "route_tls_termination_mechanism": {
+      "type": "string",
+      "enum": ["Edge", "Passthrough", "Reencrypt"]
+    },
+    "route_tls_secret":   { "type": "string" },
+    "route_host":         { "type": "string" },
+    "route_annotations":  { "type": "object" },
+    "ingress_type":       { "type": "string" },
+    "ingress_class_name": { "type": "string" },
+    "ingress_path":       { "type": "string" },
+    "ingress_path_type":  { "type": "string" },
+    "ingress_tls_secret": { "type": "string" },
+    "ingress_annotations": { "type": "object" },
+    "service_type": {
+      "type": "string",
+      "enum": ["", "ClusterIP", "NodePort", "LoadBalancer"]
+    },
+    "service_annotations":         { "type": "object" },
+    "service_account_annotations": { "type": "object" },
+    "loadbalancer_port":            { "type": "integer" },
+    "loadbalancer_protocol": {
+      "type": "string",
+      "enum": ["http", "https"]
+    },
+    "api": {
+      "type": "object",
+      "properties": {
+        "replicas":  { "type": "integer", "minimum": 0 },
+        "log_level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+        },
+        "resource_requirements": { "$ref": "#/definitions/resourceRequirements" },
+        "node_selector":  { "type": "object" },
+        "tolerations":    { "type": "array" },
+        "topology_spread_constraints": { "type": "array" },
+        "strategy":       { "type": "object" }
+      }
+    },
+    "database": {
+      "type": "object",
+      "properties": {
+        "database_secret":                  { "type": "string" },
+        "postgres_storage_class":           { "type": "string" },
+        "postgres_ssl_mode":                { "type": "string" },
+        "postgres_data_volume_init":        { "type": "boolean" },
+        "postgres_keep_pvc_after_upgrade":  { "type": "boolean" },
+        "postgres_init_container_commands": { "type": "string" },
+        "postgres_extra_settings":          { "type": "array" },
+        "idle_disabled":                    { "type": "boolean" },
+        "priority_class":                   { "type": "string" },
+        "resource_requirements": { "$ref": "#/definitions/resourceRequirements" },
+        "storage_requirements":  { "$ref": "#/definitions/storageRequirements" },
+        "node_selector":  { "type": "object" },
+        "tolerations":    { "type": "array" }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "properties": {
+        "redis_secret":     { "type": "string" },
+        "eda_redis_secret": { "type": "string" },
+        "replicas":         { "type": "integer", "minimum": 0 },
+        "resource_requirements": { "$ref": "#/definitions/resourceRequirements" },
+        "node_selector":  { "type": "object" },
+        "tolerations":    { "type": "array" }
+      }
+    },
+    "controller": {
+      "type": "object",
+      "properties": {
+        "disabled":      { "type": "boolean" },
+        "extra_settings": { "type": "array" },
+        "extraSpec":     { "type": "object" }
+      }
+    },
+    "eda": {
+      "type": "object",
+      "properties": {
+        "disabled":              { "type": "boolean" },
+        "automation_server_url": { "type": "string" },
+        "extra_settings":        { "type": "array" },
+        "extraSpec":             { "type": "object" }
+      }
+    },
+    "hub": {
+      "type": "object",
+      "properties": {
+        "disabled":                   { "type": "boolean" },
+        "file_storage_size":          { "type": "string" },
+        "file_storage_access_mode":   { "type": "string" },
+        "file_storage_storage_class": { "type": "string" },
+        "content":  { "type": "object", "properties": { "replicas": { "type": "integer" } } },
+        "worker":   { "type": "object", "properties": { "replicas": { "type": "integer" } } },
+        "gunicorn_api_workers":     { "type": "integer" },
+        "gunicorn_content_workers": { "type": "integer" },
+        "extraSpec": { "type": "object" }
+      }
+    },
+    "lightspeed": {
+      "type": "object",
+      "properties": {
+        "disabled":                    { "type": "boolean" },
+        "chatbot_config_secret_name":  { "type": "string" },
+        "extraSpec":                   { "type": "object" }
+      }
+    },
+    "mcp": {
+      "type": "object",
+      "properties": {
+        "disabled":               { "type": "boolean" },
+        "allow_write_operations": { "type": "boolean" },
+        "image":                  { "type": "string" },
+        "image_version":          { "type": "string" },
+        "extraSpec":              { "type": "object" }
+      }
+    },
+    "extra_settings": { "type": "array" },
+    "feature_flags": {
+      "type": "object",
+      "additionalProperties": { "type": "boolean" }
+    },
+    "extraSpec": { "type": "object" }
+  },
+  "definitions": {
+    "resourceRequirements": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "object",
+          "properties": {
+            "cpu":    { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "properties": {
+            "cpu":    { "type": "string" },
+            "memory": { "type": "string" }
+          }
+        }
+      }
+    },
+    "storageRequirements": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "object",
+          "properties": { "storage": { "type": "string" } }
+        },
+        "limits": {
+          "type": "object",
+          "properties": { "storage": { "type": "string" } }
+        }
+      }
+    }
+  }
+}
