@@ -1,0 +1,16 @@
+AAP Gateway has been deployed.
+
+Instance name:  {{ .Values.name | default "aap" }}
+Namespace:      {{ .Values.namespace }}
+Hostname:       {{ .Values.hostname }}
+Idle (passive): {{ .Values.idle_aap }}
+
+Components:
+  Controller:  {{ if ((.Values.controller).disabled) }}disabled{{ else }}enabled{{ end }}
+  EDA:         {{ if ((.Values.eda).disabled) }}disabled{{ else }}enabled{{ end }}
+  Hub:         {{ if ((.Values.hub).disabled) }}disabled{{ else }}enabled{{ end }}
+  Lightspeed:  {{ if ((.Values.lightspeed).disabled) }}disabled{{ else }}enabled{{ end }}
+  MCP:         {{ if ((.Values.mcp).disabled) }}disabled{{ else }}enabled{{ end }}
+
+Check the AnsibleAutomationPlatform status:
+  oc get aap {{ .Values.name | default "aap" }} -n {{ .Values.namespace }} -o yaml
