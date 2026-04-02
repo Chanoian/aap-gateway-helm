@@ -40,14 +40,14 @@ Ready-to-use values files are in [`examples/`](./examples/):
 
 ## Components
 
-The chart supports four components. All are disabled by default (including Controller):
+The chart supports four components. All are **enabled by default**, matching the AAP Gateway operator behavior. Set `disabled: true` to skip a component.
 
 | Component | Key | Default |
 |-----------|-----|---------|
 | Gateway API | always on | — |
-| AutomationController | `controller.disabled` | `true` (disabled) |
-| Event-Driven Ansible | `eda.disabled` | `true` (disabled) |
-| Automation Hub | `hub.disabled` | `true` (disabled) |
+| AutomationController | `controller.disabled` | `false` (enabled) |
+| Event-Driven Ansible | `eda.disabled` | `false` (enabled) |
+| Automation Hub | `hub.disabled` | `false` (enabled) |
 
 Enable components in your values file:
 

@@ -133,7 +133,7 @@
 
 {{- /* ── controller ────────────────────────────────────────────────────────── */}}
 {{- $ctrl := dict }}
-{{- if not .Values.controller.disabled }}{{- $_ := set $ctrl "disabled" false }}{{- end }}
+{{- $_ := set $ctrl "disabled" .Values.controller.disabled }}
 {{- range $k, $v := .Values.controller }}
   {{- if ne $k "disabled" }}
     {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
@@ -145,7 +145,7 @@
 
 {{- /* ── eda ────────────────────────────────────────────────────────────────── */}}
 {{- $eda := dict }}
-{{- if not .Values.eda.disabled }}{{- $_ := set $eda "disabled" false }}{{- end }}
+{{- $_ := set $eda "disabled" .Values.eda.disabled }}
 {{- range $k, $v := .Values.eda }}
   {{- if ne $k "disabled" }}
     {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
@@ -157,7 +157,7 @@
 
 {{- /* ── hub ────────────────────────────────────────────────────────────────── */}}
 {{- $hub := dict }}
-{{- if not .Values.hub.disabled }}{{- $_ := set $hub "disabled" false }}{{- end }}
+{{- $_ := set $hub "disabled" .Values.hub.disabled }}
 {{- range $k, $v := .Values.hub }}
   {{- if and (ne $k "disabled") (ne $k "content") (ne $k "worker") }}
     {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}

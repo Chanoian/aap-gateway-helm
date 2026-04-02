@@ -174,8 +174,8 @@ redis:
 # can be set directly under the component key (see crds/ for reference).
 
 controller:
-  # disabled: set false to deploy AutomationController
-  disabled: true
+  # disabled: set true to disable AutomationController
+  disabled: false
   # extra_settings: list of {setting, value} pairs injected into controller config
   extra_settings: []
   # Any AutomationController spec field can be set directly here.
@@ -187,8 +187,8 @@ controller:
   #       memory: "1Gi"
 
 eda:
-  # disabled: set true to skip deploying Event-Driven Ansible
-  disabled: true
+  # disabled: set true to disable Event-Driven Ansible
+  disabled: false
   # automation_server_url: URL of the AutomationController — operator auto-discovers if left empty
   automation_server_url: ""
   # extra_settings: list of {setting, value} pairs injected into EDA config
@@ -197,8 +197,8 @@ eda:
   # Ref: crds/eda.yaml
 
 hub:
-  # disabled: set true to skip deploying Automation Hub
-  disabled: true
+  # disabled: set true to disable Automation Hub
+  disabled: false
   # file_storage_size: size of the Hub file storage PVC (e.g. 100Gi)
   file_storage_size: ""
   # file_storage_access_mode: PVC access mode (ReadWriteMany required for multi-replica)

@@ -1,5 +1,5 @@
 # ── Controller only — minimal deployment ──────────────────────────────────────
-# Just the Gateway + AutomationController. Hub and EDA are disabled (default).
+# Gateway + AutomationController only. Hub and EDA explicitly disabled.
 # Good for: getting started, CI environments, small teams.
 
 name: aap
@@ -10,3 +10,9 @@ no_log: true
 
 controller:
   disabled: false
+
+eda:
+  disabled: true
+
+hub:
+  disabled: true
