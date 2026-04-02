@@ -48,7 +48,8 @@ db_fields_encryption_secret: ""
 
 # ── Networking ────────────────────────────────────────────────────────────────
 # hostname: public hostname for the AAP Gateway UI (e.g. aap.apps.cluster.example.com)
-hostname: ""  # REQUIRED
+# Optional — if omitted the operator auto-generates a route hostname from the CR name.
+hostname: ""
 
 # public_base_url: override the base URL if different from hostname
 public_base_url: ""

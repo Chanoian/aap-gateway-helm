@@ -1,12 +1,12 @@
 {{- /* ── Required field enforcement ──────────────────────────────────────── */}}
 {{- if not .Values.namespace }}{{- fail "namespace is required and must not be empty" }}{{- end }}
-{{- if not .Values.hostname }}{{- fail "hostname is required and must not be empty" }}{{- end }}
 
 {{- /* ── Build top-level spec dict ──────────────────────────────────────────
      Only emit fields that are explicitly non-default so the rendered CR
      stays minimal and matches what the operator would produce itself.
 */}}
-{{- $spec := dict "hostname" .Values.hostname -}}
+{{- $spec := dict -}}
+{{- if .Values.hostname }}{{- $_ := set $spec "hostname" .Values.hostname }}{{- end }}
 
 {{- /* Always emit meaningful deployment settings when set */}}
 {{- $_ := set $spec "no_log" .Values.no_log }}
