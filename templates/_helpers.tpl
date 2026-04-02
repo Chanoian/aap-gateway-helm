@@ -51,6 +51,27 @@ Usage in template:
 {{- end }}
 
 {{/*
+aap-gateway.deepMerge — recursively merges src dict into dst dict in place.
+When both dst and src have the same key and both values are maps, recurse.
+Otherwise src value wins (shallow overwrite at that level).
+
+Usage: {{- $_ := include "aap-gateway.deepMerge" (list $dst $src) | fromYaml }}
+The return value can be discarded — dst is mutated in place as a side effect.
+*/}}
+{{- define "aap-gateway.deepMerge" -}}
+{{- $dst := index . 0 -}}
+{{- $src := index . 1 -}}
+{{- range $k, $v := $src -}}
+  {{- if and (hasKey $dst $k) (kindIs "map" $v) (kindIs "map" (index $dst $k)) -}}
+    {{- $_ := set $dst $k (include "aap-gateway.deepMerge" (list (index $dst $k) $v) | fromYaml) -}}
+  {{- else -}}
+    {{- $_ := set $dst $k $v -}}
+  {{- end -}}
+{{- end -}}
+{{- $dst | toYaml -}}
+{{- end }}
+
+{{/*
 aap-gateway.storageRequirements — builds a storage_requirements value dict.
 
 Input: a map with shape {requests: {storage}, limits: {storage}}

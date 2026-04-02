@@ -189,12 +189,12 @@
 {{- if gt (len $worker) 0 }}{{- $_ := set $hub "worker" $worker }}{{- end }}
 {{- if gt (len $hub) 0 }}{{- $_ := set $spec "hub" $hub }}{{- end }}
 
-{{- /* ── top-level extraSpec override ────────────────────────────────────────
-     Iterating extraSpec and setting keys in $spec means these values
-     override anything set above without creating duplicate YAML keys.
+{{- /* ── top-level extraSpec override (deep merge) ────────────────────────────
+     Uses aap-gateway.deepMerge so extraSpec.api.strategy merges into the
+     rendered api block rather than replacing it entirely.
 */}}
-{{- range $k, $v := .Values.extraSpec }}
-  {{- $_ := set $spec $k $v }}
+{{- if .Values.extraSpec }}
+  {{- $_ := include "aap-gateway.deepMerge" (list $spec .Values.extraSpec) | fromYaml }}
 {{- end }}
 ---
 apiVersion: aap.ansible.com/v1alpha1

@@ -224,8 +224,7 @@ extra_settings: []
 # Example: {FEATURE_SOME_FLAG: true}
 feature_flags: {}
 
-# extraSpec: arbitrary top-level fields set into the AnsibleAutomationPlatform spec last.
-# WARNING: shallow replacement — extraSpec.api replaces the entire api block, dropping
-# modeled fields like api.replicas. Safe for top-level scalar fields or when you want
-# full control of a block. Use component pass-through keys for nested field overrides.
+# extraSpec: arbitrary fields deep-merged into the AnsibleAutomationPlatform spec last.
+# Nested keys are merged recursively — extraSpec.api.strategy adds to the rendered api
+# block without dropping api.replicas or api.log_level.
 extraSpec: {}

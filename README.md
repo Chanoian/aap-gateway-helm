@@ -307,7 +307,7 @@ redhat_registry_ns: ansible-automation-platform-26
 |-----|---------|-------------|
 | `extra_settings` | `[]` | Global settings `[{setting, value}]` for the Gateway |
 | `feature_flags` | `{}` | Feature flags — keys must start with `FEATURE_` |
-| `extraSpec` | `{}` | Top-level fields set last into the CR spec. **Shallow replacement** — `extraSpec.api` replaces the whole `api` block. Safe for scalars or full block overrides. |
+| `extraSpec` | `{}` | Fields deep-merged last into the CR spec. Nested keys are merged recursively — `extraSpec.api.strategy` adds to the rendered `api` block without dropping `api.replicas`. |
 
 ## Release Branches
 
