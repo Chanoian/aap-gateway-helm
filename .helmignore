@@ -6,5 +6,4 @@
 *.md
 docs/
 crds/
-ci/
 examples/

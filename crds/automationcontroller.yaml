@@ -2166,22 +2166,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: AutomationController
-    listKind: AutomationControllerList
-    plural: automationcontrollers
-    singular: automationcontroller
-  conditions:
-  - lastTransitionTime: "2026-04-01T13:31:55Z"
-    message: no conflicts found
-    reason: NoConflicts
-    status: "True"
-    type: NamesAccepted
-  - lastTransitionTime: "2026-04-01T13:31:55Z"
-    message: the initial names have been accepted
-    reason: InitialNamesAccepted
-    status: "True"
-    type: Established
-  storedVersions:
-  - v1beta1

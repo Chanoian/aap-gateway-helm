@@ -206,11 +206,11 @@ hub:
   # file_storage_storage_class: StorageClass for the Hub file storage PVC
   file_storage_storage_class: ""
   content:
-    # replicas: number of Hub content service replicas (omitted if 1)
-    replicas: 1
+    # replicas: number of Hub content service replicas (omitted if 2, operator default)
+    replicas: 2
   worker:
-    # replicas: number of Hub worker replicas (omitted if 1)
-    replicas: 1
+    # replicas: number of Hub worker replicas (omitted if 2, operator default)
+    replicas: 2
   # Any Hub spec field can be set directly here.
   # Ref: crds/ directory (reference only, not packaged)
 

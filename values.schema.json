@@ -117,7 +117,7 @@
       "properties": {
         "disabled":                   { "type": "boolean" },
         "file_storage_size":          { "type": "string" },
-        "file_storage_access_mode":   { "type": "string" },
+        "file_storage_access_mode":   { "type": "string", "enum": ["", "ReadWriteMany", "ReadWriteOnce"] },
         "file_storage_storage_class": { "type": "string" },
         "content":  { "type": "object", "properties": { "replicas": { "type": "integer", "minimum": 0 } } },
         "worker":   { "type": "object", "properties": { "replicas": { "type": "integer", "minimum": 0 } } }

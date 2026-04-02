@@ -51,6 +51,5 @@ helm package .
 - No hardcoded environment-specific values
 
 ## Later Goals (not yet implemented)
-- OpenShift Route templates
+- OpenShift Route templates for LTM Purpose in case of Active Passive 
 - HashiCorp VSO (VaultConnection, VaultAuth, VaultStaticSecret)
-- Per-component ResourceQuota and LimitRange (each component has its own per-module limits)

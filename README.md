@@ -297,8 +297,8 @@ redhat_registry_ns: ansible-automation-platform-26
 | `hub.file_storage_storage_class` | `""` | StorageClass for Hub PVC |
 | `hub.file_storage_size` | `""` | PVC size (e.g. `100Gi`) |
 | `hub.file_storage_access_mode` | `""` | PVC access mode (`ReadWriteMany` for multi-replica) |
-| `hub.content.replicas` | `1` | Hub content service replicas |
-| `hub.worker.replicas` | `1` | Hub worker replicas |
+| `hub.content.replicas` | `2` | Hub content service replicas |
+| `hub.worker.replicas` | `2` | Hub worker replicas |
 | Any `AutomationHub` spec field | — | Passed through directly (see `crds/automationplatform.yaml`) |
 
 ### Global Escape Hatches

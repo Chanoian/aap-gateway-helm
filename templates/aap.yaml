@@ -169,10 +169,10 @@
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and .Values.hub.content.replicas (gt (int .Values.hub.content.replicas) 1) }}
+{{- if and .Values.hub.content.replicas (ne (int .Values.hub.content.replicas) 2) }}
   {{- $_ := set $hub "content" (dict "replicas" .Values.hub.content.replicas) }}
 {{- end }}
-{{- if and .Values.hub.worker.replicas (gt (int .Values.hub.worker.replicas) 1) }}
+{{- if and .Values.hub.worker.replicas (ne (int .Values.hub.worker.replicas) 2) }}
   {{- $_ := set $hub "worker" (dict "replicas" .Values.hub.worker.replicas) }}
 {{- end }}
 {{- if gt (len $hub) 0 }}{{- $_ := set $spec "hub" $hub }}{{- end }}

@@ -2959,22 +2959,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: EDA
-    listKind: EDAList
-    plural: edas
-    singular: eda
-  conditions:
-  - lastTransitionTime: "2026-04-01T13:31:56Z"
-    message: no conflicts found
-    reason: NoConflicts
-    status: "True"
-    type: NamesAccepted
-  - lastTransitionTime: "2026-04-01T13:31:56Z"
-    message: the initial names have been accepted
-    reason: InitialNamesAccepted
-    status: "True"
-    type: Established
-  storedVersions:
-  - v1alpha1
