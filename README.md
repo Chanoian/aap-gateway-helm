@@ -276,30 +276,30 @@ redhat_registry_ns: ansible-automation-platform-26
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `controller.disabled` | `true` | Disable AutomationController |
+| `controller.disabled` | `false` | Disable AutomationController |
 | `controller.extra_settings` | `[]` | Extra settings `[{setting, value}]` |
-| Any `AutomationController` spec field | — | Passed through directly (see `crds/automationcontroller.yaml`) |
+| Any `AutomationController` spec field | — | Passed through directly (see `crds/automationcontrollers.yaml`) |
 
 ### EDA (`eda.*`)
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `eda.disabled` | `true` | Disable Event-Driven Ansible |
+| `eda.disabled` | `false` | Disable Event-Driven Ansible |
 | `eda.automation_server_url` | `""` | AutomationController URL — operator auto-discovers if empty |
 | `eda.extra_settings` | `[]` | Extra settings `[{setting, value}]` |
-| Any `EDA` spec field | — | Passed through directly (see `crds/eda.yaml`) |
+| Any `EDA` spec field | — | Passed through directly (see `crds/edas.yaml`) |
 
 ### Hub (`hub.*`)
 
 | Key | Default | Description |
 |-----|---------|-------------|
-| `hub.disabled` | `true` | Disable Automation Hub |
+| `hub.disabled` | `false` | Disable Automation Hub |
 | `hub.file_storage_storage_class` | `""` | StorageClass for Hub PVC |
 | `hub.file_storage_size` | `""` | PVC size (e.g. `100Gi`) |
 | `hub.file_storage_access_mode` | `""` | PVC access mode (`ReadWriteMany` for multi-replica) |
 | `hub.content.replicas` | `2` | Hub content service replicas |
 | `hub.worker.replicas` | `2` | Hub worker replicas |
-| Any `AutomationHub` spec field | — | Passed through directly (see `crds/automationhub.yaml`) |
+| Any `AutomationHub` spec field | — | Passed through directly (see `crds/automationhubs.yaml`) |
 
 ### Global Escape Hatches
 
@@ -307,7 +307,7 @@ redhat_registry_ns: ansible-automation-platform-26
 |-----|---------|-------------|
 | `extra_settings` | `[]` | Global settings `[{setting, value}]` for the Gateway |
 | `feature_flags` | `{}` | Feature flags — keys must start with `FEATURE_` |
-| `extraSpec` | `{}` | Arbitrary fields merged last into the CR spec, overriding anything above |
+| `extraSpec` | `{}` | Top-level fields set last into the CR spec. **Shallow replacement** — `extraSpec.api` replaces the whole `api` block. Safe for scalars or full block overrides. |
 
 ## Release Branches
 

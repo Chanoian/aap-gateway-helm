@@ -1,5 +1,7 @@
 # ── Identity ──────────────────────────────────────────────────────────────────
-# name: name of the AnsibleAutomationPlatform CR
+# name: name of the AnsibleAutomationPlatform CR.
+# The AAP CR is a singleton per namespace — two Helm releases into the same namespace
+# must use different names or they will collide on the same CR.
 name: aap
 
 # namespace: target namespace for the CR (must already exist or be created separately)
@@ -179,7 +181,7 @@ controller:
   # extra_settings: list of {setting, value} pairs injected into controller config
   extra_settings: []
   # Any AutomationController spec field can be set directly here.
-  # Ref: crds/automationcontroller.yaml (reference only, not packaged)
+  # Ref: crds/automationcontrollers.yaml (reference only, not packaged)
   # Example:
   #   web_resource_requirements:
   #     requests:
@@ -194,7 +196,7 @@ eda:
   # extra_settings: list of {setting, value} pairs injected into EDA config
   extra_settings: []
   # Any EDA spec field can be set directly here.
-  # Ref: crds/eda.yaml
+  # Ref: crds/edas.yaml
 
 hub:
   # disabled: set true to disable Automation Hub
@@ -222,6 +224,8 @@ extra_settings: []
 # Example: {FEATURE_SOME_FLAG: true}
 feature_flags: {}
 
-# extraSpec: arbitrary fields merged into the AnsibleAutomationPlatform spec last.
-# These override any field set above. Use to access spec fields not yet modeled here.
+# extraSpec: arbitrary top-level fields set into the AnsibleAutomationPlatform spec last.
+# WARNING: shallow replacement — extraSpec.api replaces the entire api block, dropping
+# modeled fields like api.replicas. Safe for top-level scalar fields or when you want
+# full control of a block. Use component pass-through keys for nested field overrides.
 extraSpec: {}
