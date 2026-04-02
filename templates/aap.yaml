@@ -1,7 +1,3 @@
-{{- /* ── Validate required fields ─────────────────────────────────────────── */}}
-{{- $_ := required "Values.namespace is required — set namespace in your values file" .Values.namespace -}}
-{{- $_ := required "Values.hostname is required — set hostname in your values file" .Values.hostname -}}
-
 {{- /* ── Build top-level spec dict ──────────────────────────────────────────
      Only emit fields that are explicitly non-default so the rendered CR
      stays minimal and matches what the operator would produce itself.
@@ -79,7 +75,7 @@
 
 {{- /* ── api sub-spec ─────────────────────────────────────────────────────── */}}
 {{- $api := dict
-    "replicas"  (.Values.api.replicas | default 1)
+    "replicas"  .Values.api.replicas
     "log_level" (.Values.api.log_level | default "INFO")
 -}}
 {{- $apiRR := include "aap-gateway.resourceRequirements" .Values.api.resource_requirements | fromYaml }}
@@ -120,7 +116,7 @@
 {{- $redis := dict }}
 {{- if .Values.redis.redis_secret }}{{- $_ := set $redis "redis_secret" .Values.redis.redis_secret }}{{- end }}
 {{- if .Values.redis.eda_redis_secret }}{{- $_ := set $redis "eda_redis_secret" .Values.redis.eda_redis_secret }}{{- end }}
-{{- if and .Values.redis.replicas (gt (int .Values.redis.replicas) 1) }}
+{{- if ne (int .Values.redis.replicas) 1 }}
   {{- $_ := set $redis "replicas" .Values.redis.replicas }}
 {{- end }}
 {{- $redisRR := include "aap-gateway.resourceRequirements" .Values.redis.resource_requirements | fromYaml }}
@@ -169,12 +165,24 @@
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if and .Values.hub.content.replicas (ne (int .Values.hub.content.replicas) 2) }}
-  {{- $_ := set $hub "content" (dict "replicas" .Values.hub.content.replicas) }}
+{{- $content := dict }}
+{{- range $k, $v := .Values.hub.content }}
+  {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+    {{- if not (and (eq $k "replicas") (eq (int $v) 2)) }}
+      {{- $_ := set $content $k $v }}
+    {{- end }}
+  {{- end }}
 {{- end }}
-{{- if and .Values.hub.worker.replicas (ne (int .Values.hub.worker.replicas) 2) }}
-  {{- $_ := set $hub "worker" (dict "replicas" .Values.hub.worker.replicas) }}
+{{- if gt (len $content) 0 }}{{- $_ := set $hub "content" $content }}{{- end }}
+{{- $worker := dict }}
+{{- range $k, $v := .Values.hub.worker }}
+  {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+    {{- if not (and (eq $k "replicas") (eq (int $v) 2)) }}
+      {{- $_ := set $worker $k $v }}
+    {{- end }}
+  {{- end }}
 {{- end }}
+{{- if gt (len $worker) 0 }}{{- $_ := set $hub "worker" $worker }}{{- end }}
 {{- if gt (len $hub) 0 }}{{- $_ := set $spec "hub" $hub }}{{- end }}
 
 {{- /* ── top-level extraSpec override ────────────────────────────────────────

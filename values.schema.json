@@ -4,8 +4,8 @@
   "required": ["namespace", "hostname"],
   "properties": {
     "name":      { "type": "string" },
-    "namespace": { "type": "string", "minLength": 1 },
-    "hostname":  { "type": "string", "minLength": 1 },
+    "namespace": { "type": "string" },
+    "hostname":  { "type": "string" },
     "image_pull_policy": {
       "type": "string",
       "enum": ["Always", "Never", "IfNotPresent"]
@@ -119,8 +119,23 @@
         "file_storage_size":          { "type": "string" },
         "file_storage_access_mode":   { "type": "string", "enum": ["", "ReadWriteMany", "ReadWriteOnce"] },
         "file_storage_storage_class": { "type": "string" },
-        "content":  { "type": "object", "properties": { "replicas": { "type": "integer", "minimum": 0 } } },
-        "worker":   { "type": "object", "properties": { "replicas": { "type": "integer", "minimum": 0 } } }
+        "content": {
+          "type": "object",
+          "properties": {
+            "replicas":  { "type": "integer", "minimum": 0 },
+            "log_level": { "type": "string", "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] },
+            "resource_requirements": { "$ref": "#/definitions/resourceRequirements" },
+            "strategy":  { "type": "object" }
+          }
+        },
+        "worker": {
+          "type": "object",
+          "properties": {
+            "replicas":  { "type": "integer", "minimum": 0 },
+            "resource_requirements": { "$ref": "#/definitions/resourceRequirements" },
+            "strategy":  { "type": "object" }
+          }
+        }
       }
     },
     "extra_settings": { "type": "array", "items": { "type": "object" } },

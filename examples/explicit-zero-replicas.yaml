@@ -1,0 +1,21 @@
+# ── Explicit zero replicas (idle / scaled-down deployment) ────────────────────
+# Exercises that replicas: 0 is passed through correctly and not silently
+# replaced or dropped by truthiness checks.
+
+name: aap
+namespace: aap
+hostname: aap.apps.cluster.example.com
+
+api:
+  replicas: 0
+
+controller:
+  disabled: false
+
+hub:
+  disabled: false
+  file_storage_storage_class: ocs-external-storagecluster-cephfs
+  content:
+    replicas: 0
+  worker:
+    replicas: 0

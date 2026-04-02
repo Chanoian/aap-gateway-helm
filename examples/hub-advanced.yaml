@@ -1,0 +1,32 @@
+# ── Hub with nested sub-spec fields ───────────────────────────────────────────
+# Exercises hub.content.* and hub.worker.* pass-through to catch regressions
+# where nested fields were silently dropped.
+
+name: aap
+namespace: aap
+hostname: aap.apps.cluster.example.com
+
+hub:
+  disabled: false
+  file_storage_storage_class: ocs-external-storagecluster-cephfs
+  file_storage_size: 100Gi
+  file_storage_access_mode: ReadWriteMany
+  content:
+    replicas: 3
+    log_level: DEBUG
+    resource_requirements:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: "1"
+        memory: 2Gi
+  worker:
+    replicas: 3
+    resource_requirements:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
