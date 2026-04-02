@@ -1,0 +1,311 @@
+# ── Complex CRD coverage example ──────────────────────────────────────────────
+# This file is intentionally broad. It exercises:
+# - top-level AAP fields
+# - gateway api/database/redis settings
+# - controller/eda/hub pass-through fields taken from their CRDs
+# - extraSpec for adding a new top-level CRD-backed section (lightspeed)
+#
+# Keep `extraSpec` limited to new top-level sections here.
+# This chart currently does a shallow top-level override for `extraSpec`.
+
+name: aap-complex
+namespace: aap
+
+no_log: true
+idle_aap: false
+redis_mode: cluster
+image_pull_policy: Always
+image_pull_secrets:
+  - aap-pull-secret
+
+redhat_registry: mirror.registry.example.com
+redhat_registry_ns: ansible-automation-platform-26
+
+admin_password_secret: aap-admin-password
+bundle_cacert_secret: aap-custom-ca
+db_fields_encryption_secret: aap-fernet-key
+
+ingress_type: route
+route_host: aap.apps.cluster.example.com
+route_tls_termination_mechanism: Edge
+route_tls_secret: aap-route-tls
+
+feature_flags:
+  FEATURE_GW_SOME_FLAG: true
+  FEATURE_GW_ANOTHER_FLAG: false
+
+extra_settings:
+  - setting: SESSION_COOKIE_AGE
+    value: "86400"
+
+api:
+  replicas: 3
+  log_level: DEBUG
+  resource_requirements:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  topology_spread_constraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: aap-gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: "25%"
+      maxUnavailable: 0
+
+database:
+  postgres_ssl_mode: verify-full
+  postgres_data_volume_init: true
+  postgres_keep_pvc_after_upgrade: true
+  postgres_init_container_commands: |
+    chown -R 26:0 /var/lib/pgsql/data
+    chmod 700 /var/lib/pgsql/data
+  postgres_extra_settings:
+    - setting: max_connections
+      value: "300"
+    - setting: shared_buffers
+      value: 512MB
+    - setting: work_mem
+      value: 32MB
+  priority_class: system-cluster-critical
+  resource_requirements:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  storage_requirements:
+    requests:
+      storage: 50Gi
+
+redis:
+  replicas: 3
+  resource_requirements:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
+controller:
+  disabled: false
+  admin_user: admin
+  admin_email: admin@example.com
+  auto_upgrade: true
+  create_preload_data: true
+  secret_key_secret: controller-secret-key
+  replicas: 2
+  web_replicas: 3
+  task_replicas: 2
+  receptor_log_level: info
+  task_privileged: false
+  task_manage_replicas: true
+  web_manage_replicas: true
+  postgres_keep_pvc_after_upgrade: true
+  postgres_extra_settings:
+    - setting: max_connections
+      value: "250"
+  ee_resource_requirements:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+  web_resource_requirements:
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
+  task_resource_requirements:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  web_affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values:
+                    - web
+  extra_settings:
+    - setting: MAX_PAGE_SIZE
+      value: "200"
+
+eda:
+  disabled: false
+  automation_server_ssl_verify: true
+  route_tls_secret: eda-route-tls
+  route_tls_termination_mechanism: Edge
+  ui_disabled: false
+  api:
+    replicas: 2
+    gunicorn_workers: 4
+    resource_requirements:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2"
+        memory: "2Gi"
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+  activation_worker:
+    replicas: 2
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  default_worker:
+    replicas: 2
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  event_stream:
+    replicas: 2
+    gunicorn_workers: 4
+    mtls: true
+    prefix: /eda
+    mtls_prefix: /eda-mtls
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  scheduler:
+    replicas: 2
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  ui:
+    replicas: 2
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  extra_settings:
+    - setting: EDA_MAX_RUNNING_ACTIVATIONS
+      value: "50"
+
+hub:
+  disabled: false
+  file_storage_storage_class: ocs-external-storagecluster-cephfs
+  file_storage_size: 100Gi
+  file_storage_access_mode: ReadWriteMany
+  storage_type: file
+  container_token_secret: hub-container-token
+  signing_secret: hub-signing-secret
+  signing_scripts_configmap: hub-signing-scripts
+  redis_data_persistence: true
+  redis_storage_size: 10Gi
+  gunicorn_api_workers: 4
+  gunicorn_content_workers: 4
+  pulp_settings:
+    debug: "false"
+    GALAXY_FEATURE_FLAGS:
+      execution_environments: true
+  api:
+    replicas: 2
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  content:
+    replicas: 3
+    log_level: DEBUG
+    resource_requirements:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2"
+        memory: "2Gi"
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+  web:
+    replicas: 2
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  worker:
+    replicas: 3
+    resource_requirements:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2"
+        memory: "2Gi"
+    strategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxSurge: 1
+        maxUnavailable: 0
+  resource_manager:
+    replicas: 2
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  redis:
+    log_level: INFO
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "1Gi"

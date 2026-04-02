@@ -1,16 +1,10 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  annotations:
-    operatorframework.io/installed-alongside-10546639eb2765fb: aap/aap-operator.v2.6.0-0.1774648945
-  creationTimestamp: "2026-04-01T13:31:55Z"
-  generation: 1
   labels:
-    olm.managed: "true"
-    operators.coreos.com/ansible-automation-platform-operator.aap: ""
+    olm.managed: 'true'
+    operators.coreos.com/ansible-automation-platform-operator.aap: ''
   name: automationcontrollers.automationcontroller.ansible.com
-  resourceVersion: "68799"
-  uid: fc1d61a9-8768-448d-9040-4d88b77539d0
 spec:
   conversion:
     strategy: None
@@ -704,11 +698,11 @@ spec:
                   password
                 type: string
               loadbalancer_class:
-                default: ""
+                default: ''
                 description: Class of LoadBalancer to use
                 type: string
               loadbalancer_ip:
-                default: ""
+                default: ''
                 description: Assign LoadBalancer IP address
                 type: string
               loadbalancer_port:
@@ -2166,3 +2160,4 @@ spec:
     storage: true
     subresources:
       status: {}
+

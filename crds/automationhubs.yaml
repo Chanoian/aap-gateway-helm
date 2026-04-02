@@ -1,16 +1,10 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  annotations:
-    operatorframework.io/installed-alongside-10546639eb2765fb: aap/aap-operator.v2.6.0-0.1774648945
-  creationTimestamp: "2026-04-01T13:31:55Z"
-  generation: 1
   labels:
-    olm.managed: "true"
-    operators.coreos.com/ansible-automation-platform-operator.aap: ""
+    olm.managed: 'true'
+    operators.coreos.com/ansible-automation-platform-operator.aap: ''
   name: automationhubs.automationhub.ansible.com
-  resourceVersion: "269028"
-  uid: f8d71af8-de42-467c-91a3-77cd2a4705db
 spec:
   conversion:
     strategy: None
@@ -989,3 +983,4 @@ spec:
     storage: true
     subresources:
       status: {}
+
