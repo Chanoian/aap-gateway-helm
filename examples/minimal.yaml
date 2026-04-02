@@ -1,0 +1,7 @@
+# ── Minimal deployment — operator-generated hostname ──────────────────────────
+# Only namespace is required. The AAP operator auto-generates the route hostname
+# from the CR name (e.g. aap.apps.<cluster-domain>).
+# Good for: quick installs, lab environments, when you don't control the hostname.
+
+name: aap
+namespace: aap
