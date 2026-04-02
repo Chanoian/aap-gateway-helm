@@ -12,11 +12,11 @@ Production-grade Helm chart (`aap-gateway`) for deploying Ansible Automation Pla
 # Lint the chart
 helm lint .
 
-# Lint strictly (validates against values.schema.json)
-helm lint . --strict -f ci/test-values.yaml
+# Lint strictly against all examples (what CI does)
+for f in examples/*.yaml; do helm lint . --strict -f "$f"; done
 
-# Render templates with CI test values
-helm template aap-gateway . -f ci/test-values.yaml
+# Render a specific example
+helm template aap-gateway . -f examples/full-stack.yaml
 
 # Package the chart
 helm package .
@@ -41,9 +41,27 @@ helm package .
 - Empty string values are omitted from the rendered CR (only non-empty values make it into the manifest)
 
 ### Release Strategy
-- `main` holds latest development
-- Each AAP minor version gets a `release-2.x` branch
-- CI runs `helm lint --strict` and `helm template` on every PR
+- `main` is a read-only pointer to the latest release branch — **never commit directly to `main`**
+- Each AAP minor version gets a `release-2.x` branch (`release-2.5`, `release-2.6`, etc.)
+- All work (fixes, schema updates, CRD updates) goes to the appropriate release branch first
+- `main` is fast-forward merged from the latest release branch after changes land there:
+  ```bash
+  git checkout main
+  git merge --ff-only release-2.6
+  git push origin main
+  ```
+- Bug fixes that apply to older branches are cherry-picked: `git cherry-pick <sha>`
+- CI runs `helm lint --strict` and `helm template` on every PR against `main` and `release-*`
+
+### Per-Build Release Workflow
+When AAP ships a new build (e.g. `2.6.0+0.1774648945`):
+1. `git checkout release-2.6`
+2. Update `appVersion` in `Chart.yaml` to the new build string
+3. Run `./hack/fetch-crds.sh` to pull fresh CRDs from a live cluster (or drop them manually into `crds/`)
+4. Update `values.schema.json` and `values.yaml` if the CR spec changed
+5. `helm lint . --strict -f examples/*.yaml` — must pass
+6. Commit, tag (`chart-2.6.0-0.1774648945`), push
+7. Fast-forward `main`: `git checkout main && git merge --ff-only release-2.6 && git push origin main`
 
 ### Constraints
 - No subcharts or Helm dependencies
