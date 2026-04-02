@@ -3,19 +3,27 @@
 {{- $_ := required "Values.hostname is required — set hostname in your values file" .Values.hostname -}}
 
 {{- /* ── Build top-level spec dict ──────────────────────────────────────────
-     Using a dict means .Values.extraSpec can cleanly override any key
-     without duplicate-key issues in the rendered YAML.
+     Only emit fields that are explicitly non-default so the rendered CR
+     stays minimal and matches what the operator would produce itself.
 */}}
-{{- $spec := dict
-    "hostname"                       .Values.hostname
-    "image_pull_policy"              (.Values.image_pull_policy | default "IfNotPresent")
-    "no_log"                         .Values.no_log
-    "idle_aap"                       .Values.idle_aap
-    "redis_mode"                     (.Values.redis_mode | default "standalone")
-    "route_tls_termination_mechanism" (.Values.route_tls_termination_mechanism | default "Edge")
-    "loadbalancer_port"              .Values.loadbalancer_port
-    "loadbalancer_protocol"          (.Values.loadbalancer_protocol | default "https")
--}}
+{{- $spec := dict "hostname" .Values.hostname -}}
+
+{{- /* Always emit meaningful deployment settings when set */}}
+{{- $_ := set $spec "no_log" .Values.no_log }}
+{{- if .Values.idle_aap }}{{- $_ := set $spec "idle_aap" .Values.idle_aap }}{{- end }}
+{{- if .Values.redis_mode }}{{- $_ := set $spec "redis_mode" .Values.redis_mode }}{{- end }}
+{{- if .Values.route_tls_termination_mechanism }}
+  {{- $_ := set $spec "route_tls_termination_mechanism" .Values.route_tls_termination_mechanism }}
+{{- end }}
+{{- if and .Values.image_pull_policy (ne .Values.image_pull_policy "IfNotPresent") }}
+  {{- $_ := set $spec "image_pull_policy" .Values.image_pull_policy }}
+{{- end }}
+{{- if and .Values.loadbalancer_port (ne (int .Values.loadbalancer_port) 443) }}
+  {{- $_ := set $spec "loadbalancer_port" .Values.loadbalancer_port }}
+{{- end }}
+{{- if and .Values.loadbalancer_protocol (ne .Values.loadbalancer_protocol "https") }}
+  {{- $_ := set $spec "loadbalancer_protocol" .Values.loadbalancer_protocol }}
+{{- end }}
 
 {{- /* ── Optional scalar fields (omit when empty) ─────────────────────────── */}}
 {{- $optionalStrings := dict
@@ -82,12 +90,11 @@
 {{- if .Values.api.strategy }}{{- $_ := set $api "strategy" .Values.api.strategy }}{{- end }}
 {{- $_ := set $spec "api" $api }}
 
-{{- /* ── database sub-spec ───────────────────────────────────────────────── */}}
-{{- $db := dict
-    "postgres_data_volume_init"       .Values.database.postgres_data_volume_init
-    "postgres_keep_pvc_after_upgrade" .Values.database.postgres_keep_pvc_after_upgrade
-    "idle_disabled"                   .Values.database.idle_disabled
--}}
+{{- /* ── database sub-spec — only emit non-false booleans and set strings ─── */}}
+{{- $db := dict }}
+{{- if .Values.database.postgres_data_volume_init }}{{- $_ := set $db "postgres_data_volume_init" true }}{{- end }}
+{{- if .Values.database.postgres_keep_pvc_after_upgrade }}{{- $_ := set $db "postgres_keep_pvc_after_upgrade" true }}{{- end }}
+{{- if .Values.database.idle_disabled }}{{- $_ := set $db "idle_disabled" true }}{{- end }}
 {{- $dbOptStrings := dict
     "database_secret"                  .Values.database.database_secret
     "postgres_storage_class"           .Values.database.postgres_storage_class
@@ -107,84 +114,68 @@
 {{- if gt (len $dbSR) 0 }}{{- $_ := set $db "storage_requirements" $dbSR }}{{- end }}
 {{- if .Values.database.node_selector }}{{- $_ := set $db "node_selector" .Values.database.node_selector }}{{- end }}
 {{- if .Values.database.tolerations }}{{- $_ := set $db "tolerations" .Values.database.tolerations }}{{- end }}
-{{- $_ := set $spec "database" $db }}
+{{- if gt (len $db) 0 }}{{- $_ := set $spec "database" $db }}{{- end }}
 
-{{- /* ── redis sub-spec ─────────────────────────────────────────────────── */}}
-{{- $redis := dict "replicas" (.Values.redis.replicas | default 1) }}
+{{- /* ── redis sub-spec — omit if only defaults ────────────────────────────── */}}
+{{- $redis := dict }}
 {{- if .Values.redis.redis_secret }}{{- $_ := set $redis "redis_secret" .Values.redis.redis_secret }}{{- end }}
 {{- if .Values.redis.eda_redis_secret }}{{- $_ := set $redis "eda_redis_secret" .Values.redis.eda_redis_secret }}{{- end }}
+{{- if and .Values.redis.replicas (gt (int .Values.redis.replicas) 1) }}
+  {{- $_ := set $redis "replicas" .Values.redis.replicas }}
+{{- end }}
 {{- $redisRR := include "aap-gateway.resourceRequirements" .Values.redis.resource_requirements | fromYaml }}
 {{- if gt (len $redisRR) 0 }}{{- $_ := set $redis "resource_requirements" $redisRR }}{{- end }}
 {{- if .Values.redis.node_selector }}{{- $_ := set $redis "node_selector" .Values.redis.node_selector }}{{- end }}
 {{- if .Values.redis.tolerations }}{{- $_ := set $redis "tolerations" .Values.redis.tolerations }}{{- end }}
-{{- $_ := set $spec "redis" $redis }}
+{{- if gt (len $redis) 0 }}{{- $_ := set $spec "redis" $redis }}{{- end }}
 
-{{- /* ── controller sub-spec ──────────────────────────────────────────────── */}}
-{{- $ctrl := dict "disabled" .Values.controller.disabled }}
-{{- if .Values.controller.extra_settings }}
-  {{- $_ := set $ctrl "extra_settings" .Values.controller.extra_settings }}
-{{- end }}
-{{- range $k, $v := .Values.controller.extraSpec }}
-  {{- $_ := set $ctrl $k $v }}
-{{- end }}
-{{- $_ := set $spec "controller" $ctrl }}
+{{- /* ── component pass-through helper ────────────────────────────────────────
+     Emits disabled:false when the component is enabled (so the operator sees
+     an explicit enable signal). Passes through all other non-empty values,
+     including false booleans and zero integers, which plain `if $v` drops.
+*/}}
 
-{{- /* ── eda sub-spec ──────────────────────────────────────────────────────── */}}
-{{- $eda := dict "disabled" .Values.eda.disabled }}
-{{- if not .Values.eda.disabled }}
-  {{- if not .Values.eda.automation_server_url }}
-    {{- fail "eda.automation_server_url is required when eda.disabled=false" }}
-  {{- end }}
-  {{- $_ := set $eda "automation_server_url" .Values.eda.automation_server_url }}
-{{- end }}
-{{- if .Values.eda.extra_settings }}
-  {{- $_ := set $eda "extra_settings" .Values.eda.extra_settings }}
-{{- end }}
-{{- range $k, $v := .Values.eda.extraSpec }}
-  {{- $_ := set $eda $k $v }}
-{{- end }}
-{{- $_ := set $spec "eda" $eda }}
-
-{{- /* ── hub sub-spec ──────────────────────────────────────────────────────── */}}
-{{- $hub := dict "disabled" .Values.hub.disabled }}
-{{- if not .Values.hub.disabled }}
-  {{- $_ := set $hub "file_storage_size" (.Values.hub.file_storage_size | default "100Gi") }}
-  {{- $_ := set $hub "file_storage_access_mode" (.Values.hub.file_storage_access_mode | default "ReadWriteMany") }}
-  {{- if .Values.hub.file_storage_storage_class }}
-    {{- $_ := set $hub "file_storage_storage_class" .Values.hub.file_storage_storage_class }}
-  {{- end }}
-  {{- $_ := set $hub "content" (dict "replicas" (.Values.hub.content.replicas | default 1)) }}
-  {{- $_ := set $hub "worker" (dict "replicas" (.Values.hub.worker.replicas | default 1)) }}
-  {{- $_ := set $hub "gunicorn_api_workers" (.Values.hub.gunicorn_api_workers | default 1) }}
-  {{- $_ := set $hub "gunicorn_content_workers" (.Values.hub.gunicorn_content_workers | default 1) }}
-{{- end }}
-{{- range $k, $v := .Values.hub.extraSpec }}
-  {{- $_ := set $hub $k $v }}
-{{- end }}
-{{- $_ := set $spec "hub" $hub }}
-
-{{- /* ── lightspeed sub-spec ───────────────────────────────────────────────── */}}
-{{- $ls := dict "disabled" .Values.lightspeed.disabled }}
-{{- if not .Values.lightspeed.disabled }}
-  {{- if .Values.lightspeed.chatbot_config_secret_name }}
-    {{- $_ := set $ls "chatbot_config_secret_name" .Values.lightspeed.chatbot_config_secret_name }}
+{{- /* ── controller ────────────────────────────────────────────────────────── */}}
+{{- $ctrl := dict }}
+{{- if not .Values.controller.disabled }}{{- $_ := set $ctrl "disabled" false }}{{- end }}
+{{- range $k, $v := .Values.controller }}
+  {{- if ne $k "disabled" }}
+    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+      {{- $_ := set $ctrl $k $v }}
+    {{- end }}
   {{- end }}
 {{- end }}
-{{- range $k, $v := .Values.lightspeed.extraSpec }}
-  {{- $_ := set $ls $k $v }}
-{{- end }}
-{{- $_ := set $spec "lightspeed" $ls }}
+{{- if gt (len $ctrl) 0 }}{{- $_ := set $spec "controller" $ctrl }}{{- end }}
 
-{{- /* ── mcp sub-spec ─────────────────────────────────────────────────────── */}}
-{{- $mcp := dict "disabled" .Values.mcp.disabled "allow_write_operations" .Values.mcp.allow_write_operations }}
-{{- if not .Values.mcp.disabled }}
-  {{- if .Values.mcp.image }}{{- $_ := set $mcp "image" .Values.mcp.image }}{{- end }}
-  {{- if .Values.mcp.image_version }}{{- $_ := set $mcp "image_version" .Values.mcp.image_version }}{{- end }}
+{{- /* ── eda ────────────────────────────────────────────────────────────────── */}}
+{{- $eda := dict }}
+{{- if not .Values.eda.disabled }}{{- $_ := set $eda "disabled" false }}{{- end }}
+{{- range $k, $v := .Values.eda }}
+  {{- if ne $k "disabled" }}
+    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+      {{- $_ := set $eda $k $v }}
+    {{- end }}
+  {{- end }}
 {{- end }}
-{{- range $k, $v := .Values.mcp.extraSpec }}
-  {{- $_ := set $mcp $k $v }}
+{{- if gt (len $eda) 0 }}{{- $_ := set $spec "eda" $eda }}{{- end }}
+
+{{- /* ── hub ────────────────────────────────────────────────────────────────── */}}
+{{- $hub := dict }}
+{{- if not .Values.hub.disabled }}{{- $_ := set $hub "disabled" false }}{{- end }}
+{{- range $k, $v := .Values.hub }}
+  {{- if and (ne $k "disabled") (ne $k "content") (ne $k "worker") }}
+    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+      {{- $_ := set $hub $k $v }}
+    {{- end }}
+  {{- end }}
 {{- end }}
-{{- $_ := set $spec "mcp" $mcp }}
+{{- if and .Values.hub.content.replicas (gt (int .Values.hub.content.replicas) 1) }}
+  {{- $_ := set $hub "content" (dict "replicas" .Values.hub.content.replicas) }}
+{{- end }}
+{{- if and .Values.hub.worker.replicas (gt (int .Values.hub.worker.replicas) 1) }}
+  {{- $_ := set $hub "worker" (dict "replicas" .Values.hub.worker.replicas) }}
+{{- end }}
+{{- if gt (len $hub) 0 }}{{- $_ := set $spec "hub" $hub }}{{- end }}
 
 {{- /* ── top-level extraSpec override ────────────────────────────────────────
      Iterating extraSpec and setting keys in $spec means these values

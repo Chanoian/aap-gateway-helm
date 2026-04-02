@@ -1,0 +1,12 @@
+# ── Controller only — minimal deployment ──────────────────────────────────────
+# Just the Gateway + AutomationController. Hub and EDA are disabled (default).
+# Good for: getting started, CI environments, small teams.
+
+name: aap
+namespace: aap
+hostname: aap.apps.cluster.example.com
+
+no_log: true
+
+controller:
+  disabled: false

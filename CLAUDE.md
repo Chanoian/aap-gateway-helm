@@ -33,11 +33,11 @@ helm package .
 - `crds/` — reference CRD definitions for development only; NOT packaged with the chart (AAP Operator installs these CRDs)
 
 ### Key Template
-`templates/aap.yaml` renders the single `AnsibleAutomationPlatform` CR (`apiVersion: aap.ansible.com/v1alpha1, kind: AnsibleAutomationPlatform`). The spec is built as a Go dict so `.Values.extraSpec` can override any field cleanly. Per-component `extraSpec` maps in values.yaml pass arbitrary fields into each component (controller, eda, hub, lightspeed, mcp).
+`templates/aap.yaml` renders the single `AnsibleAutomationPlatform` CR (`apiVersion: aap.ansible.com/v1alpha1, kind: AnsibleAutomationPlatform`). The spec is built as a Go dict so `.Values.extraSpec` can override any field cleanly. Each component section (controller, eda, hub) uses a direct pass-through loop: every key set under the component in `values.yaml` is emitted as-is into the component sub-spec, so any CRD field can be set without needing an explicit `extraSpec` block. The top-level `extraSpec` provides a final override layer for spec fields not tied to a specific component.
 
 ### values.yaml Conventions
 - Use `{{- fail }}` for required field enforcement — missing values never silently produce broken manifests
-- `extraSpec: {}` at both top-level and per-component provides escape hatches for fields not explicitly modeled
+- `extraSpec: {}` at top-level provides an escape hatch for spec fields not explicitly modeled
 - Empty string values are omitted from the rendered CR (only non-empty values make it into the manifest)
 
 ### Release Strategy

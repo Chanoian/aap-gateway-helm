@@ -1,0 +1,71 @@
+# ── Full stack with external DB and resource requirements ─────────────────────
+# All components enabled, external PostgreSQL, resource limits on each layer.
+# Good for: production deployments with capacity planning and a managed DB.
+
+name: aap
+namespace: aap
+hostname: aap.apps.cluster.example.com
+
+no_log: true
+
+database:
+  database_secret: aap-postgres-credentials
+
+redis:
+  resource_requirements:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+api:
+  replicas: 2
+  resource_requirements:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
+controller:
+  disabled: false
+  web_resource_requirements:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  task_resource_requirements:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
+eda:
+  disabled: false
+  resource_requirements:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
+hub:
+  disabled: false
+  file_storage_storage_class: ocs-external-storagecluster-cephfs
+  file_storage_size: 100Gi
+  file_storage_access_mode: ReadWriteMany
+  web_resource_requirements:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"

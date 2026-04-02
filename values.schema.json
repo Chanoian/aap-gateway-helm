@@ -1,9 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
+  "required": ["namespace", "hostname"],
   "properties": {
     "name":      { "type": "string" },
-    "namespace": { "type": "string" },
+    "namespace": { "type": "string", "minLength": 1 },
+    "hostname":  { "type": "string", "minLength": 1 },
     "image_pull_policy": {
       "type": "string",
       "enum": ["Always", "Never", "IfNotPresent"]
@@ -26,7 +28,6 @@
     "admin_password_secret":      { "type": "string" },
     "bundle_cacert_secret":       { "type": "string" },
     "db_fields_encryption_secret": { "type": "string" },
-    "hostname":      { "type": "string" },
     "public_base_url": { "type": "string" },
     "route_tls_termination_mechanism": {
       "type": "string",
@@ -76,7 +77,7 @@
         "postgres_data_volume_init":        { "type": "boolean" },
         "postgres_keep_pvc_after_upgrade":  { "type": "boolean" },
         "postgres_init_container_commands": { "type": "string" },
-        "postgres_extra_settings":          { "type": "array" },
+        "postgres_extra_settings":          { "type": "array", "items": { "type": "object" } },
         "idle_disabled":                    { "type": "boolean" },
         "priority_class":                   { "type": "string" },
         "resource_requirements": { "$ref": "#/definitions/resourceRequirements" },
@@ -99,9 +100,8 @@
     "controller": {
       "type": "object",
       "properties": {
-        "disabled":      { "type": "boolean" },
-        "extra_settings": { "type": "array" },
-        "extraSpec":     { "type": "object" }
+        "disabled":       { "type": "boolean" },
+        "extra_settings": { "type": "array", "items": { "type": "object" } }
       }
     },
     "eda": {
@@ -109,8 +109,7 @@
       "properties": {
         "disabled":              { "type": "boolean" },
         "automation_server_url": { "type": "string" },
-        "extra_settings":        { "type": "array" },
-        "extraSpec":             { "type": "object" }
+        "extra_settings":        { "type": "array", "items": { "type": "object" } }
       }
     },
     "hub": {
@@ -120,32 +119,11 @@
         "file_storage_size":          { "type": "string" },
         "file_storage_access_mode":   { "type": "string" },
         "file_storage_storage_class": { "type": "string" },
-        "content":  { "type": "object", "properties": { "replicas": { "type": "integer" } } },
-        "worker":   { "type": "object", "properties": { "replicas": { "type": "integer" } } },
-        "gunicorn_api_workers":     { "type": "integer" },
-        "gunicorn_content_workers": { "type": "integer" },
-        "extraSpec": { "type": "object" }
+        "content":  { "type": "object", "properties": { "replicas": { "type": "integer", "minimum": 0 } } },
+        "worker":   { "type": "object", "properties": { "replicas": { "type": "integer", "minimum": 0 } } }
       }
     },
-    "lightspeed": {
-      "type": "object",
-      "properties": {
-        "disabled":                    { "type": "boolean" },
-        "chatbot_config_secret_name":  { "type": "string" },
-        "extraSpec":                   { "type": "object" }
-      }
-    },
-    "mcp": {
-      "type": "object",
-      "properties": {
-        "disabled":               { "type": "boolean" },
-        "allow_write_operations": { "type": "boolean" },
-        "image":                  { "type": "string" },
-        "image_version":          { "type": "string" },
-        "extraSpec":              { "type": "object" }
-      }
-    },
-    "extra_settings": { "type": "array" },
+    "extra_settings": { "type": "array", "items": { "type": "object" } },
     "feature_flags": {
       "type": "object",
       "additionalProperties": { "type": "boolean" }

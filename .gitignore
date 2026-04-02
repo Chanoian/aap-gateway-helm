@@ -1,3 +1,9 @@
 # Packaged charts
 *.tgz
 .helm/
+
+# Planning artifacts
+docs/
+
+# Claude Code project instructions
+CLAUDE.md

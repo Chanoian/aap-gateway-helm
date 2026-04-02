@@ -3,3 +3,6 @@
 
 namespace: aap-ci-test
 hostname: aap.apps.ci.example.com
+
+controller:
+  disabled: false

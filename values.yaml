@@ -60,8 +60,8 @@ route_annotations: {}
 # Ingress settings (standard Kubernetes)
 ingress_type: ""
 ingress_class_name: ""
-ingress_path: /
-ingress_path_type: Prefix
+ingress_path: ""
+ingress_path_type: ""
 ingress_tls_secret: ""
 ingress_annotations: {}
 
@@ -170,71 +170,49 @@ redis:
 
 # ── Components ────────────────────────────────────────────────────────────────
 # Each component maps to a child CR managed by the AAP operator.
-# Set disabled: false to enable. Use extraSpec to pass any field from the
-# component's own CRD spec (e.g. AutomationController, EDA, Hub, Lightspeed).
+# Set disabled: false to enable. Any field from the component's own CRD spec
+# can be set directly under the component key (see crds/ for reference).
 
 controller:
-  # disabled: set true to skip deploying AutomationController
-  disabled: false
+  # disabled: set false to deploy AutomationController
+  disabled: true
   # extra_settings: list of {setting, value} pairs injected into controller config
   extra_settings: []
-  # extraSpec: any AutomationController spec field not listed above
-  # Ref: crds/automationcontroller.yaml
-  extraSpec: {}
+  # Any AutomationController spec field can be set directly here.
+  # Ref: crds/automationcontroller.yaml (reference only, not packaged)
+  # Example:
+  #   web_resource_requirements:
+  #     requests:
+  #       cpu: "500m"
+  #       memory: "1Gi"
 
 eda:
   # disabled: set true to skip deploying Event-Driven Ansible
   disabled: true
-  # automation_server_url: URL of the AutomationController — REQUIRED if disabled=false
-  automation_server_url: ""  # REQUIRED if eda.disabled=false
+  # automation_server_url: URL of the AutomationController — operator auto-discovers if left empty
+  automation_server_url: ""
   # extra_settings: list of {setting, value} pairs injected into EDA config
   extra_settings: []
-  # extraSpec: any EDA spec field not listed above
+  # Any EDA spec field can be set directly here.
   # Ref: crds/eda.yaml
-  extraSpec: {}
 
 hub:
   # disabled: set true to skip deploying Automation Hub
   disabled: true
-  # file_storage_size: size of the Hub file storage PVC
-  file_storage_size: 100Gi
+  # file_storage_size: size of the Hub file storage PVC (e.g. 100Gi)
+  file_storage_size: ""
   # file_storage_access_mode: PVC access mode (ReadWriteMany required for multi-replica)
-  file_storage_access_mode: ReadWriteMany
+  file_storage_access_mode: ""
   # file_storage_storage_class: StorageClass for the Hub file storage PVC
   file_storage_storage_class: ""
   content:
-    # replicas: number of Hub content service replicas
+    # replicas: number of Hub content service replicas (omitted if 1)
     replicas: 1
   worker:
-    # replicas: number of Hub worker replicas
+    # replicas: number of Hub worker replicas (omitted if 1)
     replicas: 1
-  # gunicorn_api_workers: number of Gunicorn workers for the Hub API
-  gunicorn_api_workers: 1
-  # gunicorn_content_workers: number of Gunicorn workers for Hub content serving
-  gunicorn_content_workers: 1
-  # extraSpec: any Hub spec field not listed above
-  extraSpec: {}
-
-lightspeed:
-  # disabled: set true to skip deploying Ansible Lightspeed
-  disabled: true
-  # chatbot_config_secret_name: name of Secret containing Lightspeed chatbot config
-  chatbot_config_secret_name: ""
-  # extraSpec: any Lightspeed spec field not listed above
-  # Ref: crds/lightspeed.yaml
-  extraSpec: {}
-
-mcp:
-  # disabled: set true to skip deploying the MCP server
-  disabled: true
-  # allow_write_operations: permit MCP write operations (use with caution)
-  allow_write_operations: false
-  # image: MCP server container image
-  image: ""
-  # image_version: MCP server image tag
-  image_version: ""
-  # extraSpec: any MCP spec field not listed above
-  extraSpec: {}
+  # Any Hub spec field can be set directly here.
+  # Ref: crds/ directory (reference only, not packaged)
 
 # ── Global escape hatches ─────────────────────────────────────────────────────
 # extra_settings: global list of {setting, value} pairs for the gateway

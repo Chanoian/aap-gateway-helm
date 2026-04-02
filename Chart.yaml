@@ -12,5 +12,6 @@ keywords:
 home: https://github.com/Chanoian/aap-gateway-helm
 sources:
   - https://github.com/Chanoian/aap-gateway-helm
+icon: https://github.com/ansible/awx/raw/devel/awx/ui/src/assets/logo.svg
 maintainers:
   - name: AAP Gateway Helm Chart Maintainers

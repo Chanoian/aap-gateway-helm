@@ -28,3 +28,15 @@ jobs:
 
       - name: Template render
         run: helm template aap-gateway . -f ci/test-values.yaml > /dev/null
+
+      - name: Lint examples
+        run: |
+          for f in examples/*.yaml; do
+            helm lint . --strict -f ci/test-values.yaml -f "$f"
+          done
+
+      - name: Template render examples
+        run: |
+          for f in examples/*.yaml; do
+            helm template aap-gateway . -f ci/test-values.yaml -f "$f" > /dev/null
+          done

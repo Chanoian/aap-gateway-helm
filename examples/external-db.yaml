@@ -1,0 +1,19 @@
+# ── Controller + EDA with external database ───────────────────────────────────
+# Uses a pre-existing PostgreSQL instance instead of the operator-managed one.
+# The Secret must contain: host, port, database, username, password.
+# Good for: managed DB services (RDS, Azure DB, etc.), shared DB clusters.
+
+name: aap
+namespace: aap
+hostname: aap.apps.cluster.example.com
+
+no_log: true
+
+database:
+  database_secret: aap-postgres-credentials
+
+controller:
+  disabled: false
+
+eda:
+  disabled: false
