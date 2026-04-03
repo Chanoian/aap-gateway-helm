@@ -2,6 +2,7 @@
 .git/
 .github/
 .claude/
+memory/
 .gitignore
 *.md
 docs/
