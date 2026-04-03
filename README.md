@@ -14,8 +14,7 @@ The chart renders a single `AnsibleAutomationPlatform` CR. The AAP Operator reco
 
 ```bash
 helm install aap-gateway . \
-  --set namespace=aap \
-  --set hostname=aap.apps.cluster.example.com
+  --set namespace=aap
 ```
 
 Or with a values file:
@@ -25,7 +24,7 @@ helm install aap-gateway . -f my-values.yaml
 helm upgrade aap-gateway . -f my-values.yaml
 ```
 
-Only `namespace` and `hostname` are required. The chart explicitly sets a small number of fields (`no_log`, `redis_mode`, route TLS termination, and API replicas/log level); everything else is left to the operator defaults.
+Only `namespace` is required. `hostname` is optional — if omitted, the AAP operator auto-generates a route hostname from the CR name. The chart explicitly sets a small number of fields (`no_log`, `redis_mode`, route TLS termination, and API replicas/log level); everything else is left to the operator defaults.
 
 ## Examples
 
@@ -220,7 +219,7 @@ redhat_registry_ns: ansible-automation-platform-26
 |-----|---------|-------------|
 | `name` | `aap` | Name of the `AnsibleAutomationPlatform` CR |
 | `namespace` | — | **Required.** Target namespace |
-| `hostname` | — | **Required.** Public hostname for the Gateway UI |
+| `hostname` | `""` | Public hostname for the Gateway UI. Optional — operator auto-generates if omitted |
 
 ### Global
 
@@ -313,6 +312,6 @@ redhat_registry_ns: ansible-automation-platform-26
 
 | Branch | AAP Version |
 |--------|-------------|
-| `main` | Development |
+| `main` | Latest stable |
+| `release-2.5` | AAP 2.5 |
 | `release-2.6` | AAP 2.6 |
-| `release-2.7` | AAP 2.7 (future) |
