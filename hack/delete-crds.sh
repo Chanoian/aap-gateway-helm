@@ -47,7 +47,7 @@ fi
 
 echo ""
 read -r -p "Delete these ${#FOUND[@]} CRD(s)? [y/N] " confirm
-if [[ "${confirm,,}" != "y" ]]; then
+if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
   echo "Aborted."
   exit 0
 fi
