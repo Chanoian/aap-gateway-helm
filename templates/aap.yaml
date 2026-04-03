@@ -52,18 +52,18 @@
   {{- if $v }}{{- $_ := set $spec $k $v }}{{- end }}
 {{- end }}
 
-{{- /* ── Optional map fields (omit when empty) ─────────────────────────────── */}}
+{{- /* ── Optional map fields — CRD declares these as type:string, so serialize to JSON ── */}}
 {{- if .Values.route_annotations }}
-  {{- $_ := set $spec "route_annotations" .Values.route_annotations }}
+  {{- $_ := set $spec "route_annotations" (.Values.route_annotations | toJson) }}
 {{- end }}
 {{- if .Values.ingress_annotations }}
-  {{- $_ := set $spec "ingress_annotations" .Values.ingress_annotations }}
+  {{- $_ := set $spec "ingress_annotations" (.Values.ingress_annotations | toJson) }}
 {{- end }}
 {{- if .Values.service_annotations }}
-  {{- $_ := set $spec "service_annotations" .Values.service_annotations }}
+  {{- $_ := set $spec "service_annotations" (.Values.service_annotations | toJson) }}
 {{- end }}
 {{- if .Values.service_account_annotations }}
-  {{- $_ := set $spec "service_account_annotations" .Values.service_account_annotations }}
+  {{- $_ := set $spec "service_account_annotations" (.Values.service_account_annotations | toJson) }}
 {{- end }}
 {{- if .Values.feature_flags }}
   {{- $_ := set $spec "feature_flags" .Values.feature_flags }}
