@@ -61,7 +61,7 @@ CHART_ONLY = {
     "name":      {"type": "string"},
     "namespace": {"type": "string"},
     "extraSpec": {"type": "object"},
-    "feature_flags": {"type": "object", "additionalProperties": {"type": "boolean"}},
+    "feature_flags": {"type": "object", "additionalProperties": False, "patternProperties": {"^FEATURE_": {"type": "boolean"}}},
 }
 
 # Sections that need recursive handling (not treated as scalar fields)

@@ -6,7 +6,7 @@
 # - extraSpec for adding a new top-level CRD-backed section (lightspeed)
 #
 # Keep `extraSpec` limited to new top-level sections here.
-# This chart currently does a shallow top-level override for `extraSpec`.
+# extraSpec is deep-merged into the CR spec via aap-gateway.deepMerge.
 
 name: aap-complex
 namespace: aap
