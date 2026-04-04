@@ -30,12 +30,15 @@ Only `namespace` is required. `hostname` is optional — if omitted, the AAP ope
 
 Ready-to-use values files are in [`examples/`](./examples/):
 
-| File | Components | Database |
-|------|-----------|----------|
-| [`controller-only.yaml`](./examples/controller-only.yaml) | Controller | internal |
-| [`full-stack.yaml`](./examples/full-stack.yaml) | Controller + EDA + Hub | internal |
-| [`external-db.yaml`](./examples/external-db.yaml) | Controller + EDA | external Secret |
-| [`full-stack-external-db-resources.yaml`](./examples/full-stack-external-db-resources.yaml) | Controller + EDA + Hub | external Secret + resource limits |
+| File | Description |
+|------|-------------|
+| [`minimal.yaml`](./examples/minimal.yaml) | Namespace only — operator auto-generates hostname |
+| [`controller-only.yaml`](./examples/controller-only.yaml) | Hub and EDA disabled |
+| [`full-stack.yaml`](./examples/full-stack.yaml) | All components, internal DB/Redis |
+| [`external-db.yaml`](./examples/external-db.yaml) | External database Secret pattern |
+| [`full-stack-external-db-resources.yaml`](./examples/full-stack-external-db-resources.yaml) | Full stack with resource limits and external DB |
+| [`hub-advanced.yaml`](./examples/hub-advanced.yaml) | Hub nested fields (`content.*`, `worker.*`) |
+| [`explicit-zero-replicas.yaml`](./examples/explicit-zero-replicas.yaml) | Verifies `replicas: 0` passes through correctly |
 
 ## Components
 
