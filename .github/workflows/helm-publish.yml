@@ -92,18 +92,18 @@ jobs:
         run: helm package . --version "${{ steps.tags.outputs.build_tag }}"
 
       - name: Push chart (build tag)
-        run: helm push aap-gateway-*.tgz oci://quay.io/achanoia/aap-gateway-operator
+        run: helm push aap-gateway-*.tgz oci://quay.io/achanoia/aap-gateway-helm
 
       - name: Retag as minor version
         if: ${{ steps.tags.outputs.build_tag != steps.tags.outputs.minor_tag }}
         run: |
           crane tag \
-            quay.io/achanoia/aap-gateway-operator/aap-gateway:${{ steps.tags.outputs.build_tag }} \
+            quay.io/achanoia/aap-gateway-helm/aap-gateway:${{ steps.tags.outputs.build_tag }} \
             ${{ steps.tags.outputs.minor_tag }}
 
       - name: Retag as latest (main only)
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           crane tag \
-            quay.io/achanoia/aap-gateway-operator/aap-gateway:${{ steps.tags.outputs.build_tag }} \
+            quay.io/achanoia/aap-gateway-helm/aap-gateway:${{ steps.tags.outputs.build_tag }} \
             latest
