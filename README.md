@@ -312,6 +312,6 @@ redhat_registry_ns: ansible-automation-platform-26
 
 | Branch | AAP Version |
 |--------|-------------|
-| `main` | Latest stable |
+| `main` | Latest stable — read-only FF pointer to current release branch |
 | `release-2.5` | AAP 2.5 |
 | `release-2.6` | AAP 2.6 |
