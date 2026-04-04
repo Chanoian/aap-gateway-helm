@@ -37,7 +37,7 @@ helm package .
 # Requires QUAY_USERNAME and QUAY_PASSWORD env vars set
 helm registry login quay.io --username "$QUAY_USERNAME" --password-stdin <<< "$QUAY_PASSWORD"
 helm package . --version <build-tag>
-helm push aap-gateway-*.tgz oci://quay.io/achanoia
+helm push aap-gateway-*.tgz oci://quay.io/achanoia  # helm appends chart name → pushes to quay.io/achanoia/aap-gateway
 
 # Run tests for version extraction logic (no cluster required)
 bash hack/test-version-extraction.sh
