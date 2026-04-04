@@ -39,6 +39,7 @@ Ready-to-use values files are in [`examples/`](./examples/):
 | [`full-stack-external-db-resources.yaml`](./examples/full-stack-external-db-resources.yaml) | Full stack with resource limits and external DB |
 | [`hub-advanced.yaml`](./examples/hub-advanced.yaml) | Hub nested fields (`content.*`, `worker.*`) |
 | [`explicit-zero-replicas.yaml`](./examples/explicit-zero-replicas.yaml) | Verifies `replicas: 0` passes through correctly |
+| [`complex-crd-coverage.yaml`](./examples/complex-crd-coverage.yaml) | Exhaustive CRD field coverage across all components (2.6 only) |
 
 ## Components
 
