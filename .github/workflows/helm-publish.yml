@@ -1,0 +1,109 @@
+name: Helm Publish
+
+on:
+  workflow_dispatch:
+
+  # Uncomment to enable automatic publish on chart file changes:
+  # push:
+  #   branches:
+  #     - main
+  #     - "release-*"
+  #   paths:
+  #     - Chart.yaml
+  #     - values.yaml
+  #     - values.schema.json
+  #     - "templates/**"
+
+concurrency:
+  group: helm-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  lint:
+    name: Lint Chart
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "latest"
+
+      - name: Lint examples
+        run: |
+          for f in examples/*.yaml; do
+            helm lint . --strict -f "$f"
+          done
+
+      - name: Template render examples
+        run: |
+          for f in examples/*.yaml; do
+            helm template aap-gateway . -f "$f" > /dev/null
+          done
+
+  publish:
+    name: Publish to Quay
+    runs-on: ubuntu-latest
+    needs: lint
+    environment: quay-publish
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: "latest"
+
+      - name: Set up crane
+        uses: imjasonh/setup-crane@v0.4
+
+      - name: Derive tags from appVersion
+        id: tags
+        run: |
+          APP_VERSION=$(grep '^appVersion:' Chart.yaml | sed 's/appVersion: *//;s/"//g')
+          MINOR_TAG=$(echo "$APP_VERSION" | cut -d. -f1,2)
+
+          if echo "$APP_VERSION" | grep -q '-'; then
+            BUILD_SUFFIX=$(echo "$APP_VERSION" | cut -d- -f2-)
+            BUILD_TAG="${MINOR_TAG}-${BUILD_SUFFIX}"
+          else
+            BUILD_TAG="$MINOR_TAG"
+          fi
+
+          echo "app_version=$APP_VERSION"  >> "$GITHUB_OUTPUT"
+          echo "minor_tag=$MINOR_TAG"      >> "$GITHUB_OUTPUT"
+          echo "build_tag=$BUILD_TAG"      >> "$GITHUB_OUTPUT"
+
+          echo "Derived tags — build: $BUILD_TAG  minor: $MINOR_TAG"
+
+      - name: Log in to Quay
+        run: |
+          echo "${{ secrets.QUAY_PASSWORD }}" | helm registry login quay.io \
+            --username "${{ secrets.QUAY_USERNAME }}" \
+            --password-stdin
+          echo "${{ secrets.QUAY_PASSWORD }}" | crane auth login quay.io \
+            --username "${{ secrets.QUAY_USERNAME }}" \
+            --password-stdin
+
+      - name: Package chart
+        run: helm package . --version "${{ steps.tags.outputs.build_tag }}"
+
+      - name: Push chart (build tag)
+        run: helm push aap-gateway-*.tgz oci://quay.io/achanoia/aap-gateway-operator
+
+      - name: Retag as minor version
+        if: ${{ steps.tags.outputs.build_tag != steps.tags.outputs.minor_tag }}
+        run: |
+          crane tag \
+            quay.io/achanoia/aap-gateway-operator/aap-gateway:${{ steps.tags.outputs.build_tag }} \
+            ${{ steps.tags.outputs.minor_tag }}
+
+      - name: Retag as latest (main only)
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: |
+          crane tag \
+            quay.io/achanoia/aap-gateway-operator/aap-gateway:${{ steps.tags.outputs.build_tag }} \
+            latest
