@@ -67,10 +67,11 @@ echo ""
 OPERATOR_VERSION=""
 if oc get crd ansibleautomationplatforms.aap.ansible.com &>/dev/null; then
   OPERATOR_VERSION=$(oc get crd ansibleautomationplatforms.aap.ansible.com \
-    -o jsonpath='{.metadata.annotations}' 2>/dev/null | python3 -c "
+    -o json 2>/dev/null | python3 -c "
 import sys, json
 try:
-    annotations = json.loads(sys.stdin.read())
+    crd = json.loads(sys.stdin.read())
+    annotations = crd.get('metadata', {}).get('annotations', {})
     for k, v in annotations.items():
         if 'installed-alongside' in k and '.v' in v:
             print(v.split('.v', 1)[1])

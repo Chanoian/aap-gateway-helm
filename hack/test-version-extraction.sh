@@ -22,11 +22,13 @@ assert_eq() {
 }
 
 # ── Shared extraction snippet (mirrors fetch-crds.sh implementation) ───────
+# Input: full CRD JSON object (from oc get crd -o json)
 extract_version() {
   echo "$1" | python3 -c "
 import sys, json
 try:
-    annotations = json.loads(sys.stdin.read())
+    crd = json.loads(sys.stdin.read())
+    annotations = crd.get('metadata', {}).get('annotations', {})
     for k, v in annotations.items():
         if 'installed-alongside' in k and '.v' in v:
             print(v.split('.v', 1)[1])
@@ -37,16 +39,20 @@ except Exception:
 }
 
 # ── Test 1: parse version from annotation ──────────────────────────────────
-RESULT=$(extract_version '{"operatorframework.io/installed-alongside-abc123": "aap/aap-operator.v2.6.0-0.1774648945"}')
+RESULT=$(extract_version '{"metadata": {"annotations": {"operatorframework.io/installed-alongside-abc123": "aap/aap-operator.v2.6.0-0.1774648945"}}}')
 assert_eq "extracts version from annotation" "2.6.0-0.1774648945" "$RESULT"
 
 # ── Test 2: empty annotations object returns nothing ───────────────────────
-RESULT=$(extract_version '{}')
+RESULT=$(extract_version '{"metadata": {"annotations": {}}}')
 assert_eq "returns empty when annotations absent" "" "$RESULT"
 
 # ── Test 3: annotation present but no .v marker returns nothing ────────────
-RESULT=$(extract_version '{"operatorframework.io/installed-alongside-abc123": "aap/aap-operator"}')
+RESULT=$(extract_version '{"metadata": {"annotations": {"operatorframework.io/installed-alongside-abc123": "aap/aap-operator"}}}')
 assert_eq "returns empty when .v marker absent" "" "$RESULT"
+
+# ── Test 4: Go-style map output (old jsonpath bug) returns nothing safely ──
+RESULT=$(extract_version 'map[operatorframework.io/installed-alongside-abc123:aap/aap-operator.v2.6.0-0.1774648945]')
+assert_eq "Go-style map input returns empty (not a crash)" "" "$RESULT"
 
 # ── Test 4: idempotency — versions match, Chart.yaml is not touched ────────
 TMPDIR=$(mktemp -d)
