@@ -77,7 +77,8 @@ bash hack/test-version-extraction.sh
 - `full-stack-external-db-resources.yaml` — full stack with resource limits
 - `hub-advanced.yaml` — exercises hub nested fields (`content.*`, `worker.*`)
 - `explicit-zero-replicas.yaml` — verifies `replicas: 0` passes through correctly
-- `complex-crd-coverage.yaml` — exhaustive CRD field coverage across all components (2.6 only)
+- `complex-crd-coverage.yaml` — exhaustive CRD field coverage across all components
+- `testing-full-stack.yaml` — all components, labels/annotations on all resources, resource limits, internal DB, real-deployment validated
 
 ### Release Strategy
 - `main` is a read-only pointer to the latest release branch — **never commit directly to `main`**
@@ -108,6 +109,10 @@ When AAP ships a new build:
 - No Kustomize
 - No hardcoded environment-specific values
 - Minimum supported AAP version: 2.5 (`release-2.5` branch)
+
+### Known Operator Bugs (as of AAP 2.5/2.6)
+- **`additional_labels` / `service_labels` not propagated:** The `additional_labels` field on `AutomationController` and `EDA` CRDs is accepted at the CR level but the operator does not apply these labels to pods, deployments, or services. `service_labels` on `AutomationController` has the same issue. Hub has no label fields at all. Fields are kept in `examples/testing-full-stack.yaml` to validate once the operator is fixed.
+- **String-typed complex fields in child CRDs:** `node_selector`, `topology_spread_constraints`, and all `*_annotations` fields on `AutomationController`, `EDA`, and `AutomationHub` are declared as `type: string` (JSON-encoded) in their CRDs. Passing these as native YAML objects/arrays via the component pass-through causes the child CR admission webhook to reject them. Always set these via `extraSpec` as pre-serialized JSON strings.
 
 ## Later Goals (not yet implemented)
 - OpenShift Route templates for LTM Purpose in case of Active Passive

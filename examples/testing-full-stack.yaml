@@ -1,0 +1,245 @@
+# ── Testing full-stack ─────────────────────────────────────────────────────────
+# All components enabled, labels/annotations on every resource, resource
+# requests+limits on every pod group, internal DB and Hub file storage.
+# No hostname — operator auto-generates the route hostname from the CR name.
+
+namespace: aap
+name: aap-gateway
+
+no_log: true
+idle_aap: false
+redis_mode: standalone
+
+# ── Top-level gateway annotations (template serializes these to JSON) ───────────
+route_annotations:
+  haproxy.router.openshift.io/timeout: 60s
+  haproxy.router.openshift.io/balance: roundrobin
+service_annotations:
+  app.kubernetes.io/managed-by: helm
+service_account_annotations:
+  app.kubernetes.io/managed-by: helm
+
+# ── Gateway API ────────────────────────────────────────────────────────────────
+api:
+  replicas: 1
+  log_level: INFO
+  resource_requirements:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  node_selector:
+    node-role.kubernetes.io/worker: ""
+  topology_spread_constraints:
+    - maxSkew: 1
+      topologyKey: topology.kubernetes.io/zone
+      whenUnsatisfiable: ScheduleAnyway
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: aap-gateway
+
+# ── Internal database ──────────────────────────────────────────────────────────
+database:
+  postgres_storage_class: ocs-external-storagecluster-ceph-rbd
+  postgres_keep_pvc_after_upgrade: true
+  resource_requirements:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  storage_requirements:
+    requests:
+      storage: 20Gi
+
+# ── Redis ─────────────────────────────────────────────────────────────────────
+redis:
+  replicas: 1
+  resource_requirements:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+# ── AutomationController ───────────────────────────────────────────────────────
+controller:
+  disabled: false
+  # additional_labels: operator bug in AAP 2.5 — field is accepted by the CRD
+  # but the operator does not propagate these labels to pods or services.
+  # Keeping the field here so it can be validated once the operator is fixed.
+  additional_labels:
+    - app.kubernetes.io/part-of=aap
+    - environment=testing
+  web_resource_requirements:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  task_resource_requirements:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+  ee_resource_requirements:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "1Gi"
+
+# ── Event-Driven Ansible ───────────────────────────────────────────────────────
+eda:
+  disabled: false
+  # additional_labels: same operator bug as controller — not propagated in AAP 2.5.
+  additional_labels:
+    - app.kubernetes.io/part-of=aap
+    - environment=testing
+  api:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  activation_worker:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  default_worker:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  event_stream:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  scheduler:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+  ui:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+
+# ── Automation Hub ─────────────────────────────────────────────────────────────
+hub:
+  disabled: false
+  file_storage_storage_class: ocs-external-storagecluster-cephfs
+  file_storage_size: 20Gi
+  file_storage_access_mode: ReadWriteMany
+  storage_type: file
+  api:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  content:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  web:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  worker:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+  resource_manager:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+  redis:
+    replicas: 1
+    resource_requirements:
+      requests:
+        cpu: "100m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+
+# ── Component-level string-typed fields ────────────────────────────────────────
+# The child CRDs (AutomationController, EDA, AutomationHub) declare annotations,
+# node_selector, and topology_spread_constraints as type: string (JSON-encoded).
+# These must be set via extraSpec as pre-serialized JSON strings — passing them
+# as native YAML objects/arrays through the component pass-through will cause
+# the child CR admission webhook to reject them.
+extraSpec:
+  controller:
+    node_selector: '{"node-role.kubernetes.io/worker":""}'
+    topology_spread_constraints: '[{"maxSkew":1,"topologyKey":"topology.kubernetes.io/zone","whenUnsatisfiable":"ScheduleAnyway","labelSelector":{"matchLabels":{"app.kubernetes.io/component":"controller"}}}]'
+    service_annotations: '{"app.kubernetes.io/managed-by":"helm"}'
+    service_account_annotations: '{"app.kubernetes.io/managed-by":"helm"}'
+    ingress_annotations: '{"app.kubernetes.io/managed-by":"helm"}'
+    service_labels: '{"app.kubernetes.io/part-of":"aap","environment":"testing"}'
+  eda:
+    service_account_annotations: '{"app.kubernetes.io/managed-by":"helm"}'
+    ingress_annotations: '{"app.kubernetes.io/managed-by":"helm"}'
+  hub:
+    node_selector: '{"node-role.kubernetes.io/worker":""}'
+    topology_spread_constraints: '[{"maxSkew":1,"topologyKey":"topology.kubernetes.io/zone","whenUnsatisfiable":"ScheduleAnyway","labelSelector":{"matchLabels":{"app.kubernetes.io/component":"hub"}}}]'
+    service_annotations: '{"app.kubernetes.io/managed-by":"helm"}'
+    ingress_annotations: '{"app.kubernetes.io/managed-by":"helm"}'

@@ -39,7 +39,8 @@ Ready-to-use values files are in [`examples/`](./examples/):
 | [`full-stack-external-db-resources.yaml`](./examples/full-stack-external-db-resources.yaml) | Full stack with resource limits and external DB |
 | [`hub-advanced.yaml`](./examples/hub-advanced.yaml) | Hub nested fields (`content.*`, `worker.*`) |
 | [`explicit-zero-replicas.yaml`](./examples/explicit-zero-replicas.yaml) | Verifies `replicas: 0` passes through correctly |
-| [`complex-crd-coverage.yaml`](./examples/complex-crd-coverage.yaml) | Exhaustive CRD field coverage across all components (2.6 only) |
+| [`complex-crd-coverage.yaml`](./examples/complex-crd-coverage.yaml) | Exhaustive CRD field coverage across all components |
+| [`testing-full-stack.yaml`](./examples/testing-full-stack.yaml) | All components, labels/annotations on all resources, resource limits, internal DB |
 
 ## Components
 
@@ -68,7 +69,7 @@ hub:
 
 ### Component pass-through
 
-Any field from the component's own CRD spec can be set directly under the component key — no nesting required:
+Any field from the component's own CRD spec can be set directly under the component key. Controller and EDA fields are flat; Hub groups some fields under nested sub-objects (`web`, `api`, `content`, `worker`, etc.):
 
 ```yaml
 controller:
@@ -86,13 +87,25 @@ controller:
   task_privileged: true
 
 hub:
-  web_resource_requirements:
-    requests:
-      cpu: "250m"
-      memory: "512Mi"
+  web:
+    resource_requirements:
+      requests:
+        cpu: "250m"
+        memory: "512Mi"
 ```
 
 Refer to the CRD definitions in [`crds/`](./crds/) for all available fields (reference only — CRDs are installed by the AAP Operator, not this chart).
+
+> **Note — string-typed complex fields:** The child CRDs (`AutomationController`, `EDA`, `AutomationHub`) declare several fields that look like objects or arrays but are actually `type: string` (JSON-encoded). This includes `node_selector`, `topology_spread_constraints`, `service_annotations`, `ingress_annotations`, and `service_account_annotations`. Passing these as native YAML through the component pass-through will cause the child CR admission webhook to reject them. Use `extraSpec` with pre-serialized JSON strings instead:
+>
+> ```yaml
+> extraSpec:
+>   controller:
+>     node_selector: '{"node-role.kubernetes.io/worker":""}'
+>     service_annotations: '{"app.kubernetes.io/managed-by":"helm"}'
+>   hub:
+>     node_selector: '{"node-role.kubernetes.io/worker":""}'
+> ```
 
 ## Database
 
@@ -147,7 +160,7 @@ The chart defaults to an OpenShift Route with Edge TLS termination. The hostname
 
 ```yaml
 hostname: aap.apps.cluster.example.com
-route_tls_termination_mechanism: Edge  # Edge | Passthrough | Reencrypt
+route_tls_termination_mechanism: Edge  # Edge | Passthrough
 route_tls_secret: my-tls-secret        # optional — operator generates a cert if omitted
 ```
 

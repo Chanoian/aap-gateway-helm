@@ -55,7 +55,7 @@ hostname: ""
 public_base_url: ""
 
 # Route settings (OpenShift)
-route_tls_termination_mechanism: Edge  # Edge | Passthrough | Reencrypt
+route_tls_termination_mechanism: Edge  # Edge | Passthrough
 route_tls_secret: ""
 route_host: ""
 route_annotations: {}
