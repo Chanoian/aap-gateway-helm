@@ -6,7 +6,7 @@
 namespace: aap
 name: aap-gateway
 
-no_log: true
+no_log: false
 idle_aap: false
 redis_mode: standalone
 
