@@ -111,7 +111,8 @@ When AAP ships a new build:
 - Minimum supported AAP version: 2.5 (`release-2.5` branch)
 
 ### Known Operator Bugs (as of AAP 2.5/2.6)
-- **`additional_labels` / `service_labels` not propagated:** The `additional_labels` field on `AutomationController` and `EDA` CRDs is accepted at the CR level but the operator does not apply these labels to pods, deployments, or services. `service_labels` on `AutomationController` has the same issue. Hub has no label fields at all. Fields are kept in `examples/testing-full-stack.yaml` to validate once the operator is fixed.
+- **`additional_labels` not propagated:** The `additional_labels` field on `AutomationController` and `EDA` CRDs is accepted at the CR level but the operator does not apply these labels to pods, deployments, or services. Hub has no label fields at all. Fields are kept in `examples/testing-full-stack.yaml` to validate once the operator is fixed.
+- **`service_labels` on `AutomationController` causes reconciliation failure:** The operator embeds the JSON string value of `service_labels` as a raw YAML scalar when generating the Service manifest. Because the value contains colons (e.g. `{"app.kubernetes.io/part-of":"aap"}`), the YAML parser treats it as a mapping key and fails with `could not find expected ':'`. This breaks `Apply Resources` and prevents controller pods from being created. **Do not set `service_labels` on the controller** — it is commented out in `examples/testing-full-stack.yaml`.
 - **String-typed complex fields in child CRDs:** `node_selector`, `topology_spread_constraints`, and all `*_annotations` fields on `AutomationController`, `EDA`, and `AutomationHub` are declared as `type: string` (JSON-encoded) in their CRDs. Passing these as native YAML objects/arrays via the component pass-through causes the child CR admission webhook to reject them. Always set these via `extraSpec` as pre-serialized JSON strings.
 
 ## Later Goals (not yet implemented)
