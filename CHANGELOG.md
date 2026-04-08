@@ -5,6 +5,16 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `helm-docs` integration — `values.yaml` comments (`# --`) now drive the README values table automatically
+- `README.md.gotmpl` template separates custom content from the auto-generated values section
+- Pre-commit hook runs `helm-docs` and `helm lint --strict` before every commit
+- GitHub PR template and issue templates (bug report, feature request)
+
+### Changed
+- `helm-lint.yml` CI trigger cleaned up — `release-*` branch patterns removed (single `main` branch model)
+- CHANGELOG brought up to date with 1.0.0 and 1.0.1 entries
+
 ## [1.0.1] — 2026-04-07
 
 ### Fixed
