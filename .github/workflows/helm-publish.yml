@@ -87,15 +87,7 @@ jobs:
         run: helm push aap-gateway-*.tgz oci://quay.io/achanoia
 
       - name: Retag as minor version
-        if: ${{ steps.tags.outputs.chart_version != steps.tags.outputs.minor_tag }}
         run: |
           crane tag \
             quay.io/achanoia/aap-gateway:${{ steps.tags.outputs.chart_version }} \
             ${{ steps.tags.outputs.minor_tag }}
-
-      - name: Retag as latest (main only)
-        if: ${{ github.ref == 'refs/heads/main' }}
-        run: |
-          crane tag \
-            quay.io/achanoia/aap-gateway:${{ steps.tags.outputs.chart_version }} \
-            latest
