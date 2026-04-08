@@ -1,5 +1,8 @@
 # aap-gateway Helm Chart
 
+[![Helm Lint](https://github.com/Chanoian/aap-gateway-helm/actions/workflows/helm-lint.yml/badge.svg?branch=main)](https://github.com/Chanoian/aap-gateway-helm/actions/workflows/helm-lint.yml)
+[![Helm Publish](https://github.com/Chanoian/aap-gateway-helm/actions/workflows/helm-publish.yml/badge.svg?branch=main)](https://github.com/Chanoian/aap-gateway-helm/actions/workflows/helm-publish.yml)
+
 A community Helm chart for deploying [Ansible Automation Platform](https://www.redhat.com/en/technologies/management/ansible) on Red Hat OpenShift. Compatible with **AAP 2.5 and 2.6+**.
 
 The chart renders a single `AnsibleAutomationPlatform` CR. The AAP Operator reconciles it and manages all child resources (AutomationController, EDA, Hub, database, Redis). You bring the values — the operator does the rest.
