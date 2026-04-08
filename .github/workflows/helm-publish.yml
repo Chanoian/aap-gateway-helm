@@ -60,24 +60,16 @@ jobs:
       - name: Set up crane
         uses: imjasonh/setup-crane@v0.4
 
-      - name: Derive tags from appVersion
+      - name: Derive tags from chart version
         id: tags
         run: |
-          APP_VERSION=$(grep '^appVersion:' Chart.yaml | sed 's/appVersion: *//;s/"//g')
-          MINOR_TAG=$(echo "$APP_VERSION" | cut -d. -f1,2)
+          CHART_VERSION=$(grep '^version:' Chart.yaml | sed 's/version: *//;s/"//g')
+          MINOR_TAG=$(echo "$CHART_VERSION" | cut -d. -f1,2)
 
-          if echo "$APP_VERSION" | grep -q '-'; then
-            BUILD_SUFFIX=$(echo "$APP_VERSION" | cut -d- -f2-)
-            BUILD_TAG="${MINOR_TAG}-${BUILD_SUFFIX}"
-          else
-            BUILD_TAG="$MINOR_TAG"
-          fi
+          echo "chart_version=$CHART_VERSION" >> "$GITHUB_OUTPUT"
+          echo "minor_tag=$MINOR_TAG"         >> "$GITHUB_OUTPUT"
 
-          echo "app_version=$APP_VERSION"  >> "$GITHUB_OUTPUT"
-          echo "minor_tag=$MINOR_TAG"      >> "$GITHUB_OUTPUT"
-          echo "build_tag=$BUILD_TAG"      >> "$GITHUB_OUTPUT"
-
-          echo "Derived tags — build: $BUILD_TAG  minor: $MINOR_TAG"
+          echo "Derived tags — chart: $CHART_VERSION  minor: $MINOR_TAG"
 
       - name: Log in to Quay
         run: |
@@ -89,21 +81,21 @@ jobs:
             --password-stdin
 
       - name: Package chart
-        run: helm package . --version "${{ steps.tags.outputs.build_tag }}"
+        run: helm package . --version "${{ steps.tags.outputs.chart_version }}"
 
-      - name: Push chart (build tag)
+      - name: Push chart
         run: helm push aap-gateway-*.tgz oci://quay.io/achanoia
 
       - name: Retag as minor version
-        if: ${{ steps.tags.outputs.build_tag != steps.tags.outputs.minor_tag }}
+        if: ${{ steps.tags.outputs.chart_version != steps.tags.outputs.minor_tag }}
         run: |
           crane tag \
-            quay.io/achanoia/aap-gateway:${{ steps.tags.outputs.build_tag }} \
+            quay.io/achanoia/aap-gateway:${{ steps.tags.outputs.chart_version }} \
             ${{ steps.tags.outputs.minor_tag }}
 
       - name: Retag as latest (main only)
         if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           crane tag \
-            quay.io/achanoia/aap-gateway:${{ steps.tags.outputs.build_tag }} \
+            quay.io/achanoia/aap-gateway:${{ steps.tags.outputs.chart_version }} \
             latest
