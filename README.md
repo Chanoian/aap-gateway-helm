@@ -24,14 +24,21 @@ The chart is published to [quay.io/achanoia/aap-gateway](https://quay.io/achanoi
 helm install aap-gateway oci://quay.io/achanoia/aap-gateway \
   --version 1.0.1 \
   -f my-values.yaml \
+  --set namespace=aap \
   -n aap --create-namespace
 
 # Upgrade
 helm upgrade aap-gateway oci://quay.io/achanoia/aap-gateway \
   --version 1.0.1 \
   -f my-values.yaml \
+  --set namespace=aap \
   -n aap
 ```
+
+> **Note:** `--set namespace=aap` sets the chart value `.Values.namespace`, which the chart requires to render the CR. The `-n aap` flag is the Helm release namespace and is independent — omitting `namespace` from your values will cause the install to fail with `namespace is required and must not be empty`. Set it in your values file to avoid passing `--set` every time:
+> ```yaml
+> namespace: aap
+> ```
 
 Available tags on Quay:
 
@@ -52,7 +59,7 @@ helm install aap-gateway . -f my-values.yaml -n aap --create-namespace
 helm upgrade aap-gateway . -f my-values.yaml -n aap
 ```
 
-Only `namespace` is required. `hostname` is optional — if omitted, the AAP operator auto-generates a route hostname from the CR name.
+`namespace` is required and must be set in your values file (or via `--set namespace=aap`). `hostname` is optional — if omitted, the AAP operator auto-generates a route hostname from the CR name.
 
 ## Examples
 
