@@ -3,16 +3,11 @@ name: Helm Publish
 on:
   workflow_dispatch:
 
-  # Uncomment to enable automatic publish on chart file changes:
-  # push:
-  #   branches:
-  #     - main
-  #     - "release-*"
-  #   paths:
-  #     - Chart.yaml
-  #     - values.yaml
-  #     - values.schema.json
-  #     - "templates/**"
+  push:
+    branches:
+      - main
+    paths:
+      - Chart.yaml
 
 concurrency:
   group: helm-publish-${{ github.ref }}
