@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Pre-commit: regenerate README via helm-docs, then run helm lint --strict.
+
+set -euo pipefail
+
+# ── helm-docs ─────────────────────────────────────────────────────────────────
+if command -v helm-docs &>/dev/null; then
+  echo "Running helm-docs..."
+  helm-docs --log-level warning
+  git add README.md
+else
+  echo "WARNING: helm-docs not found — skipping README regeneration" >&2
+  echo "         Install with: brew install helm-docs" >&2
+fi
+
+# ── helm lint ─────────────────────────────────────────────────────────────────
+if ! command -v helm &>/dev/null; then
+  echo "WARNING: helm not found — skipping lint" >&2
+  exit 0
+fi
+
+echo "Running helm lint --strict against all examples..."
+FAILED=0
+for f in examples/*.yaml; do
+  if ! helm lint . --strict -f "$f" --quiet; then
+    echo "  FAILED: $f" >&2
+    FAILED=1
+  fi
+done
+
+if [[ $FAILED -ne 0 ]]; then
+  echo ""
+  echo "helm lint failed — fix the errors above before committing." >&2
+  exit 1
+fi
+
+echo "All examples passed."

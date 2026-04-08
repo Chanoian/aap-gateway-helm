@@ -263,6 +263,16 @@ database:
 
 {{ template "chart.valuesSection" . }}
 
+## Contributing
+
+After cloning, install the local git hooks:
+
+```bash
+bash hack/setup-hooks.sh
+```
+
+This installs a pre-commit hook that runs `helm-docs` (keeps README in sync with `values.yaml`) and `helm lint --strict` before every commit. Requires `helm` and `helm-docs` (`brew install helm-docs`).
+
 ## Versioning
 
 Chart versioning is independent of the AAP operator version. A single chart works across AAP 2.5 and 2.6+.
