@@ -16,17 +16,3 @@ sources:
 maintainers:
   - name: Ara Chanoian
     email: ara.chanoian@gmail.com
-annotations:
-  artifacthub.io/license: Apache-2.0
-  artifacthub.io/operator: "true"
-  artifacthub.io/operatorCapabilities: Basic Install
-  artifacthub.io/links: |
-    - name: Quay Registry
-      url: https://quay.io/achanoia/aap-gateway
-    - name: AAP Operator Docs
-      url: https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform
-  artifacthub.io/changes: |
-    - kind: fixed
-      description: Remove app.kubernetes.io/version label — appVersion is not a valid label value
-    - kind: fixed
-      description: Use chart version for helm package and Quay tags instead of appVersion
