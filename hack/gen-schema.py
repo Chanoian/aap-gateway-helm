@@ -3,14 +3,16 @@
 Generate values.schema.json by walking values.yaml and looking up
 each field's type/enum in the CRD OpenAPI schemas.
 
-values.yaml  → which fields exist (the chart's surface area)
-crds/        → types and enums for those fields
+values.yaml       → which fields exist (the chart's surface area)
+crds/<version>/   → types and enums for those fields
 
-Usage: python3 hack/gen-schema.py
+Usage: python3 hack/gen-schema.py [--version 2.6]
+       Defaults to the latest version found in crds/.
 """
 
 import json
 import sys
+import argparse
 from pathlib import Path
 
 try:
@@ -21,11 +23,27 @@ except ImportError:
 REPO_ROOT = Path(__file__).parent.parent
 OUTPUT    = REPO_ROOT / "values.schema.json"
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--version", help="AAP version to use for CRDs (e.g. 2.5, 2.6). Defaults to latest.")
+args = parser.parse_args()
+
+if args.version:
+    CRD_DIR = REPO_ROOT / "crds" / args.version
+    if not CRD_DIR.is_dir():
+        sys.exit(f"ERROR: crds/{args.version}/ not found")
+else:
+    # Pick the highest version directory available
+    versions = sorted([p.name for p in (REPO_ROOT / "crds").iterdir() if p.is_dir()])
+    if not versions:
+        sys.exit("ERROR: no versioned CRD directories found under crds/")
+    CRD_DIR = REPO_ROOT / "crds" / versions[-1]
+    print(f"Using CRDs from crds/{versions[-1]}/ (latest)", file=sys.stderr)
+
 
 def load_crd_props(filename):
-    path = REPO_ROOT / "crds" / filename
+    path = CRD_DIR / filename
     if not path.exists():
-        print(f"WARNING: crds/{filename} not found", file=sys.stderr)
+        print(f"WARNING: {CRD_DIR.name}/{filename} not found", file=sys.stderr)
         return {}
     crd = yaml.safe_load(path.read_text())
     return (

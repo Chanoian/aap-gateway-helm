@@ -2,8 +2,8 @@ apiVersion: v2
 name: aap-gateway
 description: Helm chart for deploying Ansible Automation Platform on Red Hat OpenShift
 type: application
-version: 0.1.0
-appVersion: "2.6.0-0.1774648945"
+version: 1.0.0
+appVersion: ">=2.5"
 keywords:
   - ansible
   - automation

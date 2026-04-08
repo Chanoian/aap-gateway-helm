@@ -1,12 +1,20 @@
 #!/usr/bin/env bash
-# Usage: ./hack/fetch-crds.sh
-# Fetches all AAP-related CRDs from the current oc context and saves them to crds/
+# Usage: ./hack/fetch-crds.sh <aap-version>
+#   aap-version: e.g. 2.5 or 2.6
+# Fetches all AAP-related CRDs from the current oc context and saves them to crds/<version>/
 # Run this whenever a new AAP build ships and you need to update the CRD reference files.
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CRDS_DIR="$REPO_ROOT/crds"
+
+VERSION="${1:-}"
+if [[ -z "$VERSION" ]]; then
+  echo "ERROR: aap-version argument required (e.g. ./hack/fetch-crds.sh 2.6)" >&2
+  exit 1
+fi
+
+CRDS_DIR="$REPO_ROOT/crds/$VERSION"
 
 if ! command -v oc &>/dev/null; then
   echo "ERROR: oc not found in PATH" >&2
@@ -19,7 +27,7 @@ if ! oc whoami &>/dev/null; then
 fi
 
 echo "Cluster: $(oc whoami --show-server)"
-echo "Fetching AAP CRDs into $CRDS_DIR/"
+echo "Fetching AAP $VERSION CRDs into $CRDS_DIR/"
 echo ""
 
 mkdir -p "$CRDS_DIR"
@@ -81,29 +89,18 @@ except Exception:
 " 2>/dev/null || true)
 fi
 
-# ── Idempotency check and Chart.yaml patch ────────────────────────────────
+# ── Report detected operator build version ────────────────────────────────
 if [[ -n "$OPERATOR_VERSION" ]]; then
-  CURRENT_VERSION=$(grep '^appVersion:' "$REPO_ROOT/Chart.yaml" | sed 's/appVersion: *//;s/"//g')
-  if [[ "$CURRENT_VERSION" == "$OPERATOR_VERSION" ]]; then
-    echo "Already up to date: $OPERATOR_VERSION — no publish required."
-  else
-    python3 -c "
-import sys, re
-path = sys.argv[1]; ver = sys.argv[2]
-content = open(path).read()
-content = re.sub(r'^appVersion:.*\$', f'appVersion: \"{ver}\"', content, flags=re.MULTILINE)
-open(path, 'w').write(content)
-" "$REPO_ROOT/Chart.yaml" "$OPERATOR_VERSION"
-    echo "Updated appVersion in Chart.yaml: $OPERATOR_VERSION (was: $CURRENT_VERSION)"
-  fi
+  echo "Detected operator build: $OPERATOR_VERSION"
+  echo "  (chart versioning is independent — update Chart.yaml version manually before publishing)"
 else
-  echo "  WARNING: Could not detect operator version from CRD annotations — appVersion in Chart.yaml unchanged." >&2
+  echo "  WARNING: Could not detect operator version from CRD annotations." >&2
 fi
 
 echo ""
-echo "Done. ${#CRDS[@]} CRD(s) saved to crds/"
+echo "Done. ${#CRDS[@]} CRD(s) saved to crds/$VERSION/"
 echo ""
 echo "Next steps:"
-echo "  1. Review the files in crds/"
-echo "  2. Run: python3 hack/gen-schema.py"
-echo "  3. Commit: git add crds/ Chart.yaml values.schema.json && git commit -m 'crds: update for <aap-version>'"
+echo "  1. Review the files in crds/$VERSION/"
+echo "  2. Run: python3 hack/gen-schema.py --version $VERSION"
+echo "  3. Commit: git add crds/$VERSION/ values.schema.json && git commit -m 'crds: update $VERSION CRDs'"
