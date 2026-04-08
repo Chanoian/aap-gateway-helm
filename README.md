@@ -202,7 +202,17 @@ For standard Kubernetes Ingress:
 ```yaml
 ingress_type: ingress
 ingress_class_name: nginx
+ingress_path: /
+ingress_path_type: Prefix
 ingress_tls_secret: my-tls-secret
+```
+
+For LoadBalancer:
+
+```yaml
+service_type: LoadBalancer
+loadbalancer_port: 443
+loadbalancer_protocol: https  # http | https
 ```
 
 ## Resource Requirements
@@ -251,16 +261,6 @@ database:
   idle_disabled: true
 ```
 
-## Private Registry
-
-```yaml
-image_pull_secrets:
-  - my-pull-secret
-
-redhat_registry: my-mirror.example.com
-redhat_registry_ns: ansible-automation-platform-26
-```
-
 ## Values Reference
 
 ### Identity
@@ -280,6 +280,43 @@ redhat_registry_ns: ansible-automation-platform-26
 | `redis_mode` | `standalone` | `standalone` or `cluster` |
 | `image_pull_policy` | `IfNotPresent` | `Always`, `Never`, or `IfNotPresent` |
 | `image_pull_secrets` | `[]` | Pull secret names for private registries |
+
+### Images
+
+Override operator-default images. Leave empty to use operator defaults.
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `image` | `""` | Gateway image |
+| `image_version` | `""` | Gateway image tag |
+| `postgres_image` | `""` | PostgreSQL image |
+| `postgres_image_version` | `""` | PostgreSQL image tag |
+| `redis_image` | `""` | Redis image |
+| `redis_image_version` | `""` | Redis image tag |
+| `redhat_registry` | `""` | Override default Red Hat registry (`registry.redhat.io`) |
+| `redhat_registry_ns` | `""` | Override default registry namespace |
+
+### Networking
+
+| Key | Default | Description |
+|-----|---------|-------------|
+| `hostname` | `""` | Public hostname. Optional — operator auto-generates if omitted |
+| `public_base_url` | `""` | Override the public base URL if different from hostname |
+| `route_tls_termination_mechanism` | `Edge` | `Edge` or `Passthrough` |
+| `route_tls_secret` | `""` | TLS secret for the Route. Operator generates a cert if omitted |
+| `route_host` | `""` | Explicit route hostname (alternative to `hostname`) |
+| `route_annotations` | `{}` | Annotations added to the Route object |
+| `ingress_type` | `""` | Set to `ingress` to use Kubernetes Ingress instead of Route |
+| `ingress_class_name` | `""` | Ingress class (e.g. `nginx`) |
+| `ingress_path` | `""` | Ingress path (e.g. `/`) |
+| `ingress_path_type` | `""` | `Prefix`, `Exact`, or `ImplementationSpecific` |
+| `ingress_tls_secret` | `""` | TLS secret for Ingress |
+| `ingress_annotations` | `{}` | Annotations added to the Ingress object |
+| `service_type` | `""` | `ClusterIP`, `NodePort`, or `LoadBalancer` |
+| `service_annotations` | `{}` | Annotations added to the Service |
+| `service_account_annotations` | `{}` | Annotations added to the ServiceAccount |
+| `loadbalancer_port` | `443` | LoadBalancer port (only used when `service_type=LoadBalancer`) |
+| `loadbalancer_protocol` | `https` | `http` or `https` |
 
 ### Gateway API (`api.*`)
 
@@ -302,6 +339,7 @@ redhat_registry_ns: ansible-automation-platform-26
 | `database.postgres_ssl_mode` | `""` | `disable`, `require`, `verify-ca`, `verify-full` |
 | `database.postgres_data_volume_init` | `false` | Run initContainer to fix PVC permissions |
 | `database.postgres_keep_pvc_after_upgrade` | `false` | Retain PVC across operator upgrades |
+| `database.postgres_init_container_commands` | `""` | Additional shell commands to run in the init container |
 | `database.postgres_extra_settings` | `[]` | Extra PostgreSQL config `[{setting, value}]` |
 | `database.idle_disabled` | `false` | Disable DB when `idle_aap=true` |
 | `database.priority_class` | `""` | PriorityClass for database pod |
