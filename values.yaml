@@ -18,6 +18,8 @@ image_pull_secrets: []
 no_log: true
 
 # -- Set `true` to mark this instance as passive (active-passive failover).
+# `false` is the operator default and is intentionally omitted from the rendered CR —
+# setting this to `false` explicitly has no effect.
 idle_aap: false
 
 # -- Redis deployment mode. One of `standalone`, `cluster`.
@@ -219,7 +221,12 @@ hub:
 # -- Global list of `{setting, value}` pairs for the Gateway.
 extra_settings: []
 
-# -- Feature flags. Keys must start with `FEATURE_`.
+# -- Feature flags passed to the AAP Gateway. Keys **must** start with `FEATURE_`
+# (enforced by `helm lint --strict`); values must be booleans.
+# Example:
+#   feature_flags:
+#     FEATURE_SOME_FLAG: true
+#     FEATURE_OTHER_FLAG: false
 feature_flags: {}
 
 # -- Arbitrary fields deep-merged last into the `AnsibleAutomationPlatform` spec. Nested keys are merged recursively.

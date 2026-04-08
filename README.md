@@ -22,14 +22,14 @@ The chart is published to [quay.io/achanoia/aap-gateway](https://quay.io/achanoi
 ```bash
 # Install a specific version
 helm install aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.0.1 \
+  --version 1.0.2 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap --create-namespace
 
 # Upgrade
 helm upgrade aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.0.1 \
+  --version 1.0.2 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap
@@ -44,7 +44,7 @@ Available tags on Quay:
 
 | Tag | Description |
 |-----|-------------|
-| `1.0.1` | Exact patch version — use this for pinned, reproducible installs |
+| `1.0.2` | Exact patch version — use this for pinned, reproducible installs |
 | `1.0` | Minor alias — always points to the latest `1.0.x` patch |
 
 ### From Source
@@ -295,7 +295,7 @@ database:
 | eda.extra_settings | list | `[]` | Extra settings injected into EDA config. Each item: `{setting: "name", value: "value"}`. |
 | extraSpec | object | `{}` | Arbitrary fields deep-merged last into the `AnsibleAutomationPlatform` spec. Nested keys are merged recursively. |
 | extra_settings | list | `[]` | Global list of `{setting, value}` pairs for the Gateway. |
-| feature_flags | object | `{}` | Feature flags. Keys must start with `FEATURE_`. |
+| feature_flags | object | `{}` | Feature flags passed to the AAP Gateway. Keys **must** start with `FEATURE_` (enforced by `helm lint --strict`); values must be booleans. Example:   feature_flags:     FEATURE_SOME_FLAG: true     FEATURE_OTHER_FLAG: false |
 | hostname | string | `""` | Public hostname for the AAP Gateway UI (e.g. `aap.apps.cluster.example.com`). Optional — operator auto-generates a route hostname if omitted. |
 | hub.content.replicas | int | `2` | Number of Hub content service replicas. |
 | hub.disabled | bool | `false` | Set `true` to disable Automation Hub. |
@@ -303,7 +303,7 @@ database:
 | hub.file_storage_size | string | `""` | Size of the Hub file storage PVC (e.g. `100Gi`). |
 | hub.file_storage_storage_class | string | `""` | StorageClass for the Hub file storage PVC. |
 | hub.worker.replicas | int | `2` | Number of Hub worker replicas. |
-| idle_aap | bool | `false` | Set `true` to mark this instance as passive (active-passive failover). |
+| idle_aap | bool | `false` | Set `true` to mark this instance as passive (active-passive failover). `false` is the operator default and is intentionally omitted from the rendered CR — setting this to `false` explicitly has no effect. |
 | image | string | `""` | Override the operator-default Gateway image. Leave empty to use the operator default. |
 | image_pull_policy | string | `"IfNotPresent"` | Image pull policy applied to all AAP component images. One of `Always`, `Never`, `IfNotPresent`. |
 | image_pull_secrets | list | `[]` | List of Secret names for pulling images from private registries. |

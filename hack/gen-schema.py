@@ -32,8 +32,14 @@ if args.version:
     if not CRD_DIR.is_dir():
         sys.exit(f"ERROR: crds/{args.version}/ not found")
 else:
-    # Pick the highest version directory available
-    versions = sorted([p.name for p in (REPO_ROOT / "crds").iterdir() if p.is_dir()])
+    # Pick the highest version directory available.
+    # Use a numeric tuple key so 2.10 sorts after 2.9 (not before, as lexical sort would do).
+    def version_key(name):
+        try:
+            return tuple(int(x) for x in name.split("."))
+        except ValueError:
+            return (0,)
+    versions = sorted([p.name for p in (REPO_ROOT / "crds").iterdir() if p.is_dir()], key=version_key)
     if not versions:
         sys.exit("ERROR: no versioned CRD directories found under crds/")
     CRD_DIR = REPO_ROOT / "crds" / versions[-1]
@@ -57,24 +63,51 @@ def ref(name):
 
 
 # ── Special-case rules (the only hardcoded knowledge in this script) ───────────
+#
+# When the AAP CRD changes, scan each list below and update accordingly.
+# Each entry has a comment explaining WHY it's there so you can judge
+# whether a new field belongs and whether an existing entry is still needed.
 
-# Replaced with shared $ref definitions
+# Fields whose schema is replaced with a shared $ref definition from the
+# "definitions" block at the bottom of the generated schema.  Add a field here
+# when it shares structure with an existing definition (resourceRequirements /
+# storageRequirements) rather than duplicating the nested object inline.
 RESOURCE_REFS = {
     "resource_requirements": "resourceRequirements",
     "storage_requirements":  "storageRequirements",
 }
 
-# CRD declares these as string but the chart uses them as objects
+# Fields the CRD declares as `type: string` (JSON-encoded by the operator) but
+# that values.yaml exposes as native YAML objects for user convenience.
+# The template serialises them with `toJson` before writing to the CR.
+# Without this override, field_schema() would emit `type: string` from the CRD,
+# causing `helm lint --strict` to reject the YAML-object syntax in values files.
+# Add a field here when: the CRD says string, values.yaml uses an object/map,
+# and the template calls toJson on it.
+# Note: feature_flags is listed here as a safety guard but is effectively
+# unreachable — CHART_ONLY is checked first in field_schema() and takes precedence.
 FORCE_OBJECT = {
     "route_annotations", "ingress_annotations",
     "service_annotations", "service_account_annotations",
     "feature_flags",
 }
 
-# Optional fields whose default is "" but CRD enum doesn't include ""
+# Fields that have a CRD enum but whose chart default is "" (meaning "let the
+# operator choose").  The CRD enum doesn't include "", so without patching it in,
+# `helm lint --strict` would reject any values file that leaves the field unset
+# (the empty-string default would fail validation).
+# Add a field here when: it has a CRD enum AND its values.yaml default is "".
 OPTIONAL_ENUM = {"ingress_type", "service_type", "file_storage_access_mode"}
 
-# Chart-only fields not present in any CRD
+# Fields that exist only at the chart level and have no equivalent in any CRD.
+# These bypass the CRD lookup entirely and use a fixed schema.
+# Add a field here when: it drives chart behaviour (e.g. metadata, escape hatches)
+# but is never written into the AnsibleAutomationPlatform spec directly.
+#   name      — becomes metadata.name on the rendered CR
+#   namespace — becomes metadata.namespace on the rendered CR
+#   extraSpec — deep-merged escape hatch for arbitrary spec fields not modelled in values.yaml
+#   feature_flags — chart abstraction; the CRD has no feature_flags field.
+#                   patternProperties enforces the FEATURE_ prefix required by the AAP API.
 CHART_ONLY = {
     "name":      {"type": "string"},
     "namespace": {"type": "string"},
@@ -82,7 +115,10 @@ CHART_ONLY = {
     "feature_flags": {"type": "object", "additionalProperties": False, "patternProperties": {"^FEATURE_": {"type": "boolean"}}},
 }
 
-# Sections that need recursive handling (not treated as scalar fields)
+# Top-level keys in values.yaml that map to sub-objects rather than scalar fields.
+# These are skipped in the top-level scalar walk and handled individually below
+# (each section may draw from a different CRD source, e.g. hub uses automationhubs.yaml).
+# Add a key here when you add a new structured sub-section to values.yaml.
 SECTIONS = {"api", "database", "redis", "controller", "eda", "hub"}
 
 

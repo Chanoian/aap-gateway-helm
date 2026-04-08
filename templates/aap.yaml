@@ -8,7 +8,10 @@
 {{- $spec := dict -}}
 {{- if .Values.hostname }}{{- $_ := set $spec "hostname" .Values.hostname }}{{- end }}
 
-{{- /* Always emit meaningful deployment settings when set */}}
+{{- /* no_log: always emit — chart default (true) differs from operator default (false),
+     so both true and false must reach the CR to honour the user's intent.
+     idle_aap: only emit when true — false is the operator default, omitting it keeps
+     the CR minimal. Explicit `idle_aap: false` in values has no effect by design. */}}
 {{- $_ := set $spec "no_log" .Values.no_log }}
 {{- if .Values.idle_aap }}{{- $_ := set $spec "idle_aap" .Values.idle_aap }}{{- end }}
 {{- if .Values.redis_mode }}{{- $_ := set $spec "redis_mode" .Values.redis_mode }}{{- end }}
@@ -18,7 +21,7 @@
 {{- if and .Values.image_pull_policy (ne .Values.image_pull_policy "IfNotPresent") }}
   {{- $_ := set $spec "image_pull_policy" .Values.image_pull_policy }}
 {{- end }}
-{{- if and .Values.loadbalancer_port (ne (int .Values.loadbalancer_port) 443) }}
+{{- if and (ne .Values.loadbalancer_port "") (ne (int .Values.loadbalancer_port) 443) }}
   {{- $_ := set $spec "loadbalancer_port" .Values.loadbalancer_port }}
 {{- end }}
 {{- if and .Values.loadbalancer_protocol (ne .Values.loadbalancer_protocol "https") }}
