@@ -129,7 +129,7 @@ hub:
 
 Refer to the CRD definitions in [`crds/`](./crds/) for all available fields per AAP version (reference only — CRDs are installed by the AAP Operator, not this chart).
 
-> **Note — string-typed complex fields:** The child CRDs (`AutomationController`, `EDA`, `AutomationHub`) declare several fields that look like objects or arrays but are actually `type: string` (JSON-encoded). This includes `node_selector`, `topology_spread_constraints`, `service_annotations`, `ingress_annotations`, and `service_account_annotations`. Passing these as native YAML through the component pass-through will cause the child CR admission webhook to reject them. Use `extraSpec` with pre-serialized JSON strings instead:
+> **Note — string-typed complex fields:** Some fields in the child CRDs (`AutomationController`, `EDA`, `AutomationHub`) look like objects or arrays but are declared as `type: string` (JSON-encoded). Passing these as native YAML will cause the child CR admission webhook to reject them. Before setting any structured-looking field on a component, check its type in `crds/<version>/`. If it says `type: string`, pass it as a pre-serialized JSON string via `extraSpec`:
 >
 > ```yaml
 > extraSpec:
