@@ -1,90 +1,109 @@
 # ── Identity ──────────────────────────────────────────────────────────────────
-# name: name of the AnsibleAutomationPlatform CR.
-# The AAP CR is a singleton per namespace — two Helm releases into the same namespace
-# must use different names or they will collide on the same CR.
+
+# -- Name of the `AnsibleAutomationPlatform` CR. Must be unique per namespace.
 name: aap
 
-# namespace: target namespace for the CR (must already exist or be created separately)
+# -- Target namespace for the CR. **Required.**
 namespace: ""  # REQUIRED
 
 # ── Global ────────────────────────────────────────────────────────────────────
-# image_pull_policy: applies to all AAP component images
-image_pull_policy: IfNotPresent  # Always | Never | IfNotPresent
 
-# image_pull_secrets: list of secret names for pulling images from private registries
+# -- Image pull policy applied to all AAP component images. One of `Always`, `Never`, `IfNotPresent`.
+image_pull_policy: IfNotPresent
+
+# -- List of Secret names for pulling images from private registries.
 image_pull_secrets: []
 
-# no_log: suppress sensitive output in operator logs
+# -- Suppress sensitive output in operator logs.
 no_log: true
 
-# idle_aap: set true to mark this instance as passive (active-passive failover)
+# -- Set `true` to mark this instance as passive (active-passive failover).
 idle_aap: false
 
-# redis_mode: Redis deployment mode
-redis_mode: standalone  # standalone | cluster
+# -- Redis deployment mode. One of `standalone`, `cluster`.
+redis_mode: standalone
 
 # ── Images ────────────────────────────────────────────────────────────────────
-# Override operator-default images. Leave empty to use operator defaults.
+
+# -- Override the operator-default Gateway image. Leave empty to use the operator default.
 image: ""
+# -- Override the operator-default Gateway image tag.
 image_version: ""
+# -- Override the operator-default PostgreSQL image.
 postgres_image: ""
+# -- Override the operator-default PostgreSQL image tag.
 postgres_image_version: ""
+# -- Override the operator-default Redis image.
 redis_image: ""
+# -- Override the operator-default Redis image tag.
 redis_image_version: ""
 
 # ── Registry ──────────────────────────────────────────────────────────────────
-# redhat_registry: override the default Red Hat registry (registry.redhat.io)
+
+# -- Override the default Red Hat registry (`registry.redhat.io`).
 redhat_registry: ""
-# redhat_registry_ns: override the default registry namespace
+# -- Override the default registry namespace.
 redhat_registry_ns: ""
 
 # ── Secrets ───────────────────────────────────────────────────────────────────
-# admin_password_secret: name of an existing Secret containing the admin password
+
+# -- Name of an existing Secret containing the `password` key — operator sets the admin password from it.
 admin_password_secret: ""
-# bundle_cacert_secret: name of a Secret containing a custom CA bundle
+# -- Name of a Secret containing a custom CA bundle for TLS verification.
 bundle_cacert_secret: ""
-# db_fields_encryption_secret: name of a Secret for DB field encryption key
+# -- Name of a Secret for database field-level encryption key.
 db_fields_encryption_secret: ""
 
 # ── Networking ────────────────────────────────────────────────────────────────
-# hostname: public hostname for the AAP Gateway UI (e.g. aap.apps.cluster.example.com)
-# Optional — if omitted the operator auto-generates a route hostname from the CR name.
+
+# -- Public hostname for the AAP Gateway UI (e.g. `aap.apps.cluster.example.com`). Optional — operator auto-generates a route hostname if omitted.
 hostname: ""
 
-# public_base_url: override the base URL if different from hostname
+# -- Override the public base URL if different from hostname.
 public_base_url: ""
 
-# Route settings (OpenShift)
-route_tls_termination_mechanism: Edge  # Edge | Passthrough
+# -- Route TLS termination mechanism. One of `Edge`, `Passthrough`.
+route_tls_termination_mechanism: Edge
+# -- Name of the TLS Secret for the Route. Operator generates a cert if omitted.
 route_tls_secret: ""
+# -- Explicit route hostname (alternative to `hostname`).
 route_host: ""
+# -- Annotations to add to the Route object.
 route_annotations: {}
 
-# Ingress settings (standard Kubernetes)
+# -- Set to `ingress` to use Kubernetes Ingress instead of an OpenShift Route.
 ingress_type: ""
+# -- Ingress class name (e.g. `nginx`).
 ingress_class_name: ""
+# -- Ingress path (e.g. `/`).
 ingress_path: ""
+# -- Ingress path type. One of `Prefix`, `Exact`, `ImplementationSpecific`.
 ingress_path_type: ""
+# -- Name of the TLS Secret for Ingress.
 ingress_tls_secret: ""
+# -- Annotations to add to the Ingress object.
 ingress_annotations: {}
 
-# Service settings
-service_type: ""  # ClusterIP | NodePort | LoadBalancer
+# -- Service type. One of `ClusterIP`, `NodePort`, `LoadBalancer`.
+service_type: ""
+# -- Annotations to add to the Service.
 service_annotations: {}
+# -- Annotations to add to the ServiceAccount.
 service_account_annotations: {}
 
-# LoadBalancer settings (only used when service_type=LoadBalancer)
+# -- LoadBalancer port. Only used when `service_type=LoadBalancer`.
 loadbalancer_port: 443
-loadbalancer_protocol: https  # http | https
+# -- LoadBalancer protocol. One of `http`, `https`. Only used when `service_type=LoadBalancer`.
+loadbalancer_protocol: https
 
 # ── Gateway API pods ──────────────────────────────────────────────────────────
-# api: configuration for the Gateway API deployment (the gateway pod itself)
+
 api:
-  # replicas: number of gateway API pod replicas
+  # -- Number of Gateway API pod replicas.
   replicas: 1
-  # log_level: Python logging level for the gateway API
-  log_level: INFO  # DEBUG | INFO | WARNING | ERROR | CRITICAL
-  # resource_requirements: CPU/memory requests and limits for gateway API pods
+  # -- Python logging level. One of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
+  log_level: INFO
+  # -- CPU/memory requests and limits for Gateway API pods.
   resource_requirements:
     requests:
       cpu: ""
@@ -92,43 +111,37 @@ api:
     limits:
       cpu: ""
       memory: ""
-  # node_selector: constrain gateway API pods to specific nodes
+  # -- Node selector for Gateway API pods.
   node_selector: {}
-  # tolerations: allow gateway API pods to schedule on tainted nodes
+  # -- Tolerations for Gateway API pods.
   tolerations: []
-  # topology_spread_constraints: control pod distribution across zones/nodes
+  # -- Topology spread constraints for Gateway API pods.
   topology_spread_constraints: []
-  # strategy: Deployment update strategy
+  # -- Deployment update strategy.
   strategy: {}
 
 # ── Gateway Database ──────────────────────────────────────────────────────────
-# database: configuration for the Gateway PostgreSQL database
+
 database:
-  # database_secret: name of an existing Secret with external DB connection info.
-  # If set, the operator uses the external database instead of deploying one.
-  # Secret must contain: host, port, database, username, password
+  # -- Name of an existing Secret with external DB connection info (`host`, `port`, `database`, `username`, `password`). If set, the operator skips deploying PostgreSQL.
   database_secret: ""
-
-  # postgres_storage_class: StorageClass for the database PVC (internal DB only)
+  # -- StorageClass for the database PVC (internal DB only).
   postgres_storage_class: ""
-  # postgres_ssl_mode: PostgreSQL SSL mode (disable|require|verify-ca|verify-full)
+  # -- PostgreSQL SSL mode. One of `disable`, `require`, `verify-ca`, `verify-full`.
   postgres_ssl_mode: ""
-  # postgres_data_volume_init: run initContainer to set correct PVC permissions
+  # -- Run an initContainer to set correct PVC permissions.
   postgres_data_volume_init: false
-  # postgres_keep_pvc_after_upgrade: retain PVC across operator upgrades
+  # -- Retain the database PVC across operator upgrades.
   postgres_keep_pvc_after_upgrade: false
-  # postgres_init_container_commands: additional shell commands in the init container
+  # -- Additional shell commands to run in the database init container.
   postgres_init_container_commands: ""
-  # postgres_extra_settings: list of extra PostgreSQL configuration settings
-  # Each item: {setting: "parameter_name", value: "parameter_value"}
+  # -- Extra PostgreSQL configuration settings. Each item: `{setting: "name", value: "value"}`.
   postgres_extra_settings: []
-
-  # idle_disabled: disable the database when idle_aap=true (active-passive)
+  # -- Disable the database when `idle_aap=true` (active-passive).
   idle_disabled: false
-  # priority_class: PriorityClass name for the database pod
+  # -- PriorityClass name for the database pod.
   priority_class: ""
-
-  # resource_requirements: CPU/memory for the database pod
+  # -- CPU/memory requests and limits for the database pod.
   resource_requirements:
     requests:
       cpu: ""
@@ -136,29 +149,27 @@ database:
     limits:
       cpu: ""
       memory: ""
-
-  # storage_requirements: storage size for the database PVC
+  # -- Storage size for the database PVC.
   storage_requirements:
     requests:
       storage: ""
     limits:
       storage: ""
-
-  # node_selector: constrain database pod to specific nodes
+  # -- Node selector for the database pod.
   node_selector: {}
-  # tolerations: allow database pod to schedule on tainted nodes
+  # -- Tolerations for the database pod.
   tolerations: []
 
 # ── Gateway Redis ─────────────────────────────────────────────────────────────
+
 redis:
-  # redis_secret: name of an existing Secret for external Redis connection.
-  # If set, the operator uses the external Redis instead of deploying one.
+  # -- Name of an existing Secret for external Redis. If set, the operator skips deploying Redis.
   redis_secret: ""
-  # eda_redis_secret: separate external Redis secret for EDA (if different from gateway Redis)
+  # -- Separate external Redis Secret for EDA (if different from the Gateway Redis).
   eda_redis_secret: ""
-  # replicas: number of Redis pod replicas (only used in cluster mode)
+  # -- Number of Redis pod replicas. Only used in cluster mode.
   replicas: 1
-  # resource_requirements: CPU/memory for the Redis pod
+  # -- CPU/memory requests and limits for the Redis pod.
   resource_requirements:
     requests:
       cpu: ""
@@ -166,66 +177,50 @@ redis:
     limits:
       cpu: ""
       memory: ""
-  # node_selector: constrain Redis pod to specific nodes
+  # -- Node selector for the Redis pod.
   node_selector: {}
-  # tolerations: allow Redis pod to schedule on tainted nodes
+  # -- Tolerations for the Redis pod.
   tolerations: []
 
 # ── Components ────────────────────────────────────────────────────────────────
-# Each component maps to a child CR managed by the AAP operator.
-# Set disabled: false to enable. Any field from the component's own CRD spec
-# can be set directly under the component key (see crds/ for reference).
 
 controller:
-  # disabled: set true to disable AutomationController
+  # -- Set `true` to disable AutomationController.
   disabled: false
-  # extra_settings: list of {setting, value} pairs injected into controller config
+  # -- Extra settings injected into controller config. Each item: `{setting: "name", value: "value"}`.
   extra_settings: []
-  # Any AutomationController spec field can be set directly here.
-  # Ref: crds/automationcontrollers.yaml (reference only, not packaged)
-  # Example:
-  #   web_resource_requirements:
-  #     requests:
-  #       cpu: "500m"
-  #       memory: "1Gi"
 
 eda:
-  # disabled: set true to disable Event-Driven Ansible
+  # -- Set `true` to disable Event-Driven Ansible.
   disabled: false
-  # automation_server_url: URL of the AutomationController — operator auto-discovers if left empty
+  # -- URL of the AutomationController. Operator auto-discovers if left empty.
   automation_server_url: ""
-  # extra_settings: list of {setting, value} pairs injected into EDA config
+  # -- Extra settings injected into EDA config. Each item: `{setting: "name", value: "value"}`.
   extra_settings: []
-  # Any EDA spec field can be set directly here.
-  # Ref: crds/edas.yaml
 
 hub:
-  # disabled: set true to disable Automation Hub
+  # -- Set `true` to disable Automation Hub.
   disabled: false
-  # file_storage_size: size of the Hub file storage PVC (e.g. 100Gi)
+  # -- Size of the Hub file storage PVC (e.g. `100Gi`).
   file_storage_size: ""
-  # file_storage_access_mode: PVC access mode (ReadWriteMany required for multi-replica)
+  # -- PVC access mode. Use `ReadWriteMany` for multi-replica deployments.
   file_storage_access_mode: ""
-  # file_storage_storage_class: StorageClass for the Hub file storage PVC
+  # -- StorageClass for the Hub file storage PVC.
   file_storage_storage_class: ""
   content:
-    # replicas: number of Hub content service replicas (omitted if 2, operator default)
+    # -- Number of Hub content service replicas.
     replicas: 2
   worker:
-    # replicas: number of Hub worker replicas (omitted if 2, operator default)
+    # -- Number of Hub worker replicas.
     replicas: 2
-  # Any Hub spec field can be set directly here.
-  # Ref: crds/ directory (reference only, not packaged)
 
 # ── Global escape hatches ─────────────────────────────────────────────────────
-# extra_settings: global list of {setting, value} pairs for the gateway
+
+# -- Global list of `{setting, value}` pairs for the Gateway.
 extra_settings: []
 
-# feature_flags: enable/disable feature flags. Keys must start with FEATURE_
-# Example: {FEATURE_SOME_FLAG: true}
+# -- Feature flags. Keys must start with `FEATURE_`.
 feature_flags: {}
 
-# extraSpec: arbitrary fields deep-merged into the AnsibleAutomationPlatform spec last.
-# Nested keys are merged recursively — extraSpec.api.strategy adds to the rendered api
-# block without dropping api.replicas or api.log_level.
+# -- Arbitrary fields deep-merged last into the `AnsibleAutomationPlatform` spec. Nested keys are merged recursively.
 extraSpec: {}
