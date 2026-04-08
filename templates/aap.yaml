@@ -21,7 +21,7 @@
 {{- if and .Values.image_pull_policy (ne .Values.image_pull_policy "IfNotPresent") }}
   {{- $_ := set $spec "image_pull_policy" .Values.image_pull_policy }}
 {{- end }}
-{{- if and (ne .Values.loadbalancer_port "") (ne (int .Values.loadbalancer_port) 443) }}
+{{- if ne (int .Values.loadbalancer_port) 443 }}
   {{- $_ := set $spec "loadbalancer_port" .Values.loadbalancer_port }}
 {{- end }}
 {{- if and .Values.loadbalancer_protocol (ne .Values.loadbalancer_protocol "https") }}
