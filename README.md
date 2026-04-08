@@ -1,8 +1,8 @@
 # aap-gateway Helm Chart
 
-Helm chart for deploying [Ansible Automation Platform](https://www.redhat.com/en/technologies/management/ansible) 2.6 on Red Hat OpenShift via the `AnsibleAutomationPlatform` operator CR.
+A community Helm chart for deploying [Ansible Automation Platform](https://www.redhat.com/en/technologies/management/ansible) on Red Hat OpenShift. Compatible with **AAP 2.5 and 2.6+**.
 
-The chart renders a single `AnsibleAutomationPlatform` CR. The AAP Operator reconciles it and manages all child resources (AutomationController, EDA, Hub, database, Redis).
+The chart renders a single `AnsibleAutomationPlatform` CR. The AAP Operator reconciles it and manages all child resources (AutomationController, EDA, Hub, database, Redis). You bring the values — the operator does the rest.
 
 ## Prerequisites
 
@@ -10,21 +10,46 @@ The chart renders a single `AnsibleAutomationPlatform` CR. The AAP Operator reco
 - AAP Operator installed in the target namespace
 - Helm 3.x
 
-## Quickstart
+## Installation
+
+### From Quay (recommended)
+
+The chart is published to [quay.io/achanoia/aap-gateway](https://quay.io/achanoia/aap-gateway) on every version bump.
 
 ```bash
-helm install aap-gateway . \
-  --set namespace=aap
+# Install a specific version
+helm install aap-gateway oci://quay.io/achanoia/aap-gateway \
+  --version 1.0.1 \
+  -f my-values.yaml \
+  -n aap --create-namespace
+
+# Upgrade
+helm upgrade aap-gateway oci://quay.io/achanoia/aap-gateway \
+  --version 1.0.1 \
+  -f my-values.yaml \
+  -n aap
 ```
 
-Or with a values file:
+Available tags on Quay:
+
+| Tag | Description |
+|-----|-------------|
+| `1.0.1` | Exact patch version — use this for pinned, reproducible installs |
+| `1.0` | Minor alias — always points to the latest `1.0.x` patch |
+
+### From Source
+
+Clone the repo and install directly — useful for development or customization:
 
 ```bash
-helm install aap-gateway . -f my-values.yaml
-helm upgrade aap-gateway . -f my-values.yaml
+git clone https://github.com/Chanoian/aap-gateway-helm.git
+cd aap-gateway-helm
+
+helm install aap-gateway . -f my-values.yaml -n aap --create-namespace
+helm upgrade aap-gateway . -f my-values.yaml -n aap
 ```
 
-Only `namespace` is required. `hostname` is optional — if omitted, the AAP operator auto-generates a route hostname from the CR name. The chart explicitly sets a small number of fields (`no_log`, `redis_mode`, route TLS termination, and API replicas/log level); everything else is left to the operator defaults.
+Only `namespace` is required. `hostname` is optional — if omitted, the AAP operator auto-generates a route hostname from the CR name.
 
 ## Examples
 
@@ -40,7 +65,7 @@ Ready-to-use values files are in [`examples/`](./examples/):
 | [`hub-advanced.yaml`](./examples/hub-advanced.yaml) | Hub nested fields (`content.*`, `worker.*`) |
 | [`explicit-zero-replicas.yaml`](./examples/explicit-zero-replicas.yaml) | Verifies `replicas: 0` passes through correctly |
 | [`complex-crd-coverage.yaml`](./examples/complex-crd-coverage.yaml) | Exhaustive CRD field coverage across all components |
-| [`testing-full-stack.yaml`](./examples/testing-full-stack.yaml) | All components, labels/annotations on all resources, resource limits, internal DB |
+| [`testing-full-stack.yaml`](./examples/testing-full-stack.yaml) | All components, labels/annotations, resource limits, internal DB |
 
 ## Components
 
@@ -52,8 +77,6 @@ The chart supports four components. All are **enabled by default**, matching the
 | AutomationController | `controller.disabled` | `false` (enabled) |
 | Event-Driven Ansible | `eda.disabled` | `false` (enabled) |
 | Automation Hub | `hub.disabled` | `false` (enabled) |
-
-Enable components in your values file:
 
 ```yaml
 controller:
@@ -69,7 +92,7 @@ hub:
 
 ### Component pass-through
 
-Any field from the component's own CRD spec can be set directly under the component key. Controller and EDA fields are flat; Hub groups some fields under nested sub-objects (`web`, `api`, `content`, `worker`, etc.):
+Any field from the component's own CRD spec can be set directly under the component key:
 
 ```yaml
 controller:
@@ -94,7 +117,7 @@ hub:
         memory: "512Mi"
 ```
 
-Refer to the CRD definitions in [`crds/`](./crds/) for all available fields (reference only — CRDs are installed by the AAP Operator, not this chart).
+Refer to the CRD definitions in [`crds/`](./crds/) for all available fields per AAP version (reference only — CRDs are installed by the AAP Operator, not this chart).
 
 > **Note — string-typed complex fields:** The child CRDs (`AutomationController`, `EDA`, `AutomationHub`) declare several fields that look like objects or arrays but are actually `type: string` (JSON-encoded). This includes `node_selector`, `topology_spread_constraints`, `service_annotations`, `ingress_annotations`, and `service_account_annotations`. Passing these as native YAML through the component pass-through will cause the child CR admission webhook to reject them. Use `extraSpec` with pre-serialized JSON strings instead:
 >
@@ -294,7 +317,7 @@ redhat_registry_ns: ansible-automation-platform-26
 |-----|---------|-------------|
 | `controller.disabled` | `false` | Disable AutomationController |
 | `controller.extra_settings` | `[]` | Extra settings `[{setting, value}]` |
-| Any `AutomationController` spec field | — | Passed through directly (see `crds/automationcontrollers.yaml`) |
+| Any `AutomationController` spec field | — | Passed through directly (see [`crds/2.6/automationcontrollers.yaml`](./crds/2.6/automationcontrollers.yaml)) |
 
 ### EDA (`eda.*`)
 
@@ -303,7 +326,7 @@ redhat_registry_ns: ansible-automation-platform-26
 | `eda.disabled` | `false` | Disable Event-Driven Ansible |
 | `eda.automation_server_url` | `""` | AutomationController URL — operator auto-discovers if empty |
 | `eda.extra_settings` | `[]` | Extra settings `[{setting, value}]` |
-| Any `EDA` spec field | — | Passed through directly (see `crds/edas.yaml`) |
+| Any `EDA` spec field | — | Passed through directly (see [`crds/2.6/edas.yaml`](./crds/2.6/edas.yaml)) |
 
 ### Hub (`hub.*`)
 
@@ -315,7 +338,7 @@ redhat_registry_ns: ansible-automation-platform-26
 | `hub.file_storage_access_mode` | `""` | PVC access mode (`ReadWriteMany` for multi-replica) |
 | `hub.content.replicas` | `2` | Hub content service replicas |
 | `hub.worker.replicas` | `2` | Hub worker replicas |
-| Any `AutomationHub` spec field | — | Passed through directly (see `crds/automationhubs.yaml`) |
+| Any `AutomationHub` spec field | — | Passed through directly (see [`crds/2.6/automationhubs.yaml`](./crds/2.6/automationhubs.yaml)) |
 
 ### Global Escape Hatches
 
@@ -325,10 +348,12 @@ redhat_registry_ns: ansible-automation-platform-26
 | `feature_flags` | `{}` | Feature flags — keys must start with `FEATURE_` |
 | `extraSpec` | `{}` | Fields deep-merged last into the CR spec. Nested keys are merged recursively — `extraSpec.api.strategy` adds to the rendered `api` block without dropping `api.replicas`. |
 
-## Release Branches
+## Versioning
 
-| Branch | AAP Version |
-|--------|-------------|
-| `main` | Latest stable — read-only FF pointer to current release branch |
-| `release-2.5` | AAP 2.5 |
-| `release-2.6` | AAP 2.6 |
+Chart versioning is independent of the AAP operator version. A single chart works across AAP 2.5 and 2.6+.
+
+| Chart version | AAP compatibility |
+|---------------|-------------------|
+| `1.0.x` | AAP 2.5, 2.6 |
+
+The chart is published automatically to Quay whenever `Chart.yaml` is updated on `main`.
