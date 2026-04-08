@@ -365,7 +365,7 @@ Override operator-default images. Leave empty to use operator defaults.
 |-----|---------|-------------|
 | `controller.disabled` | `false` | Disable AutomationController |
 | `controller.extra_settings` | `[]` | Extra settings `[{setting, value}]` |
-| Any `AutomationController` spec field | — | Passed through directly (see [`crds/2.6/automationcontrollers.yaml`](./crds/2.6/automationcontrollers.yaml)) |
+| Any `AutomationController` spec field | — | Passed through directly (see [`crds/<version>/automationcontrollers.yaml`](./crds/)) |
 
 ### EDA (`eda.*`)
 
@@ -374,7 +374,7 @@ Override operator-default images. Leave empty to use operator defaults.
 | `eda.disabled` | `false` | Disable Event-Driven Ansible |
 | `eda.automation_server_url` | `""` | AutomationController URL — operator auto-discovers if empty |
 | `eda.extra_settings` | `[]` | Extra settings `[{setting, value}]` |
-| Any `EDA` spec field | — | Passed through directly (see [`crds/2.6/edas.yaml`](./crds/2.6/edas.yaml)) |
+| Any `EDA` spec field | — | Passed through directly (see [`crds/<version>/edas.yaml`](./crds/)) |
 
 ### Hub (`hub.*`)
 
@@ -386,7 +386,7 @@ Override operator-default images. Leave empty to use operator defaults.
 | `hub.file_storage_access_mode` | `""` | PVC access mode (`ReadWriteMany` for multi-replica) |
 | `hub.content.replicas` | `2` | Hub content service replicas |
 | `hub.worker.replicas` | `2` | Hub worker replicas |
-| Any `AutomationHub` spec field | — | Passed through directly (see [`crds/2.6/automationhubs.yaml`](./crds/2.6/automationhubs.yaml)) |
+| Any `AutomationHub` spec field | — | Passed through directly (see [`crds/<version>/automationhubs.yaml`](./crds/)) |
 
 ### Global Escape Hatches
 
