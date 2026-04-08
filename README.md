@@ -22,14 +22,14 @@ The chart is published to [quay.io/achanoia/aap-gateway](https://quay.io/achanoi
 ```bash
 # Install a specific version
 helm install aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.0.2 \
+  --version 1.0.3 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap --create-namespace
 
 # Upgrade
 helm upgrade aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.0.2 \
+  --version 1.0.3 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap
@@ -44,7 +44,7 @@ Available tags on Quay:
 
 | Tag | Description |
 |-----|-------------|
-| `1.0.2` | Exact patch version — use this for pinned, reproducible installs |
+| `1.0.3` | Exact patch version — use this for pinned, reproducible installs |
 | `1.0` | Minor alias — always points to the latest `1.0.x` patch |
 
 ### From Source
