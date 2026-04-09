@@ -97,7 +97,7 @@ FORCE_OBJECT = {
 # `helm lint --strict` would reject any values file that leaves the field unset
 # (the empty-string default would fail validation).
 # Add a field here when: it has a CRD enum AND its values.yaml default is "".
-OPTIONAL_ENUM = {"ingress_type", "service_type", "file_storage_access_mode"}
+OPTIONAL_ENUM = {"ingress_type", "service_type", "file_storage_access_mode", "redis_mode", "route_tls_termination_mechanism"}
 
 # Fields that exist only at the chart level and have no equivalent in any CRD.
 # These bypass the CRD lookup entirely and use a fixed schema.
@@ -153,6 +153,7 @@ def field_schema(key, value, crd_props):
         schema = {k: v for k, v in crd_props[key].items() if k != "pattern"}
         if key in OPTIONAL_ENUM and "enum" in schema and "" not in schema["enum"]:
             schema["enum"] = [""] + schema["enum"]
+            schema.pop("default", None)
         return schema
 
     return infer_type(value)

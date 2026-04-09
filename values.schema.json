@@ -40,9 +40,9 @@
       "type": "boolean"
     },
     "redis_mode": {
-      "default": "standalone",
       "description": "Redis Mode",
       "enum": [
+        "",
         "cluster",
         "standalone"
       ],
@@ -102,9 +102,9 @@
       "type": "string"
     },
     "route_tls_termination_mechanism": {
-      "default": "Edge",
       "description": "The secure TLS termination mechanism to use",
       "enum": [
+        "",
         "Edge",
         "edge",
         "Passthrough",

@@ -23,7 +23,7 @@ no_log: true
 idle_aap: false
 
 # -- Redis deployment mode. One of `standalone`, `cluster`.
-redis_mode: standalone
+redis_mode: ""
 
 # ── Images ────────────────────────────────────────────────────────────────────
 
@@ -65,7 +65,7 @@ hostname: ""
 public_base_url: ""
 
 # -- Route TLS termination mechanism. One of `Edge`, `Passthrough`.
-route_tls_termination_mechanism: Edge
+route_tls_termination_mechanism: ""
 # -- Name of the TLS Secret for the Route. Operator generates a cert if omitted.
 route_tls_secret: ""
 # -- Explicit route hostname (alternative to `hostname`).

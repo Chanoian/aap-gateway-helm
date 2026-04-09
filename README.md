@@ -332,11 +332,11 @@ database:
 | redis.tolerations | list | `[]` | Tolerations for the Redis pod. |
 | redis_image | string | `""` | Override the operator-default Redis image. |
 | redis_image_version | string | `""` | Override the operator-default Redis image tag. |
-| redis_mode | string | `"standalone"` | Redis deployment mode. One of `standalone`, `cluster`. |
+| redis_mode | string | `""` | Redis deployment mode. One of `standalone`, `cluster`. |
 | route_annotations | object | `{}` | Annotations to add to the Route object. |
 | route_host | string | `""` | Explicit route hostname (alternative to `hostname`). |
 | route_tls_secret | string | `""` | Name of the TLS Secret for the Route. Operator generates a cert if omitted. |
-| route_tls_termination_mechanism | string | `"Edge"` | Route TLS termination mechanism. One of `Edge`, `Passthrough`. |
+| route_tls_termination_mechanism | string | `""` | Route TLS termination mechanism. One of `Edge`, `Passthrough`. |
 | service_account_annotations | object | `{}` | Annotations to add to the ServiceAccount. |
 | service_annotations | object | `{}` | Annotations to add to the Service. |
 | service_type | string | `""` | Service type. One of `ClusterIP`, `NodePort`, `LoadBalancer`. |
