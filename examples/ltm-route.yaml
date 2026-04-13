@@ -1,0 +1,15 @@
+# ── LTM Route — site-local fixed entry point ───────────────────────────────────
+# Deploys an OpenShift Route pointing to the local AAP service.
+# Intended for active-passive site designs where the operator-managed route
+# acts as GTM (moves between sites) and this route is the fixed LTM entry point.
+#
+# With hostname (site-specific FQDN):
+#   ltm_route_hostname: aap-ltm.apps.site-a.example.com
+#
+# Without hostname: OpenShift auto-generates one.
+
+name: aap
+namespace: aap
+
+ltm_route_enabled: true
+ltm_route_hostname: ""

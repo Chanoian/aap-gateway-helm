@@ -209,6 +209,14 @@
         }
       }
     },
+    "ltm_route_enabled": {
+      "description": "Deploy a site-local (LTM) OpenShift Route pointing to the AAP service. For active-passive site designs.",
+      "type": "boolean"
+    },
+    "ltm_route_hostname": {
+      "description": "Hostname for the LTM route. Optional — OpenShift auto-generates one if omitted.",
+      "type": "string"
+    },
     "extraSpec": {
       "type": "object"
     },

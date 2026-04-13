@@ -216,6 +216,15 @@ hub:
     # -- Number of Hub worker replicas.
     replicas: 2
 
+# ── LTM Route ─────────────────────────────────────────────────────────────────
+
+# -- Set true to deploy a site-local (LTM) OpenShift Route pointing to the AAP service.
+# In an active-passive site design, the operator-managed route acts as GTM
+# (moves between sites) while this route is a fixed, site-local entry point.
+ltm_route_enabled: false
+# -- Hostname for the LTM route. Optional — OpenShift auto-generates one if omitted.
+ltm_route_hostname: ""
+
 # ── Global escape hatches ─────────────────────────────────────────────────────
 
 # -- Global list of `{setting, value}` pairs for the Gateway.

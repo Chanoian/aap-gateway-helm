@@ -4,9 +4,8 @@
 
 name: aap
 namespace: aap
-hostname: aap.apps.cluster.example.com
 
-no_log: true
+no_log: false
 
 controller:
   disabled: false
