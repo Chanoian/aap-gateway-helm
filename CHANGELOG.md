@@ -5,6 +5,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] — 2026-04-13
+
+### Added
+- LTM Route template (`templates/ltm-route.yaml`) — opt-in OpenShift Route for active-passive site designs
+- `ltm_route_enabled` (bool, default `false`) — must be explicitly set to deploy the route
+- `ltm_route_hostname` (string, optional) — site-specific FQDN; OpenShift auto-generates one if omitted
+- `examples/ltm-route.yaml` — example values for the LTM route
+
 ### Added
 - `helm-docs` integration — `values.yaml` comments (`# --`) now drive the README values table automatically
 - `README.md.gotmpl` template separates custom content from the auto-generated values section

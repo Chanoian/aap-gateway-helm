@@ -217,6 +217,14 @@
       "description": "Hostname for the LTM route. Optional — OpenShift auto-generates one if omitted.",
       "type": "string"
     },
+    "ltm_route_annotations": {
+      "description": "Annotations to add to the LTM Route object.",
+      "type": "object"
+    },
+    "ltm_route_labels": {
+      "description": "Additional labels to add to the LTM Route object.",
+      "type": "object"
+    },
     "extraSpec": {
       "type": "object"
     },

@@ -22,14 +22,14 @@ The chart is published to [quay.io/achanoia/aap-gateway](https://quay.io/achanoi
 ```bash
 # Install a specific version
 helm install aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.1.0 \
+  --version 1.1.1 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap --create-namespace
 
 # Upgrade
 helm upgrade aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.1.0 \
+  --version 1.1.1 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap
@@ -44,7 +44,7 @@ Available tags on Quay:
 
 | Tag | Description |
 |-----|-------------|
-| `1.1.0` | Exact patch version — use this for pinned, reproducible installs |
+| `1.1.1` | Exact patch version — use this for pinned, reproducible installs |
 | `1.0` | Minor alias — always points to the latest `1.0.x` patch |
 
 ### From Source
@@ -316,8 +316,10 @@ database:
 | ingress_type | string | `""` | Set to `ingress` to use Kubernetes Ingress instead of an OpenShift Route. |
 | loadbalancer_port | int | `443` | LoadBalancer port. Only used when `service_type=LoadBalancer`. |
 | loadbalancer_protocol | string | `"https"` | LoadBalancer protocol. One of `http`, `https`. Only used when `service_type=LoadBalancer`. |
+| ltm_route_annotations | object | `{}` | Annotations to add to the LTM Route object. |
 | ltm_route_enabled | bool | `false` | Set true to deploy a site-local (LTM) OpenShift Route pointing to the AAP service. In an active-passive site design, the operator-managed route acts as GTM (moves between sites) while this route is a fixed, site-local entry point. |
 | ltm_route_hostname | string | `""` | Hostname for the LTM route. Optional — OpenShift auto-generates one if omitted. |
+| ltm_route_labels | object | `{}` | Additional labels to add to the LTM Route object. |
 | name | string | `"aap"` | Name of the `AnsibleAutomationPlatform` CR. Must be unique per namespace. |
 | namespace | string | `""` | Target namespace for the CR. **Required.** |
 | no_log | bool | `true` | Suppress sensitive output in operator logs. |

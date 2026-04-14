@@ -224,6 +224,10 @@ hub:
 ltm_route_enabled: false
 # -- Hostname for the LTM route. Optional — OpenShift auto-generates one if omitted.
 ltm_route_hostname: ""
+# -- Annotations to add to the LTM Route object.
+ltm_route_annotations: {}
+# -- Additional labels to add to the LTM Route object.
+ltm_route_labels: {}
 
 # ── Global escape hatches ─────────────────────────────────────────────────────
 

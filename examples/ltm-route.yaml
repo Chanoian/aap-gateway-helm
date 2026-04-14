@@ -12,4 +12,10 @@ name: aap
 namespace: aap
 
 ltm_route_enabled: true
-ltm_route_hostname: ""
+ltm_route_hostname: aap-ltm.apps.site-a.example.com
+ltm_route_annotations:
+  haproxy.router.openshift.io/timeout: 30s
+  haproxy.router.openshift.io/balance: roundrobin
+ltm_route_labels:
+  app.kubernetes.io/part-of: aap
+  site: site-a
