@@ -341,6 +341,21 @@ database:
 | route_host | string | `""` | Explicit route hostname (alternative to `hostname`). |
 | route_tls_secret | string | `""` | Name of the TLS Secret for the Route. Operator generates a cert if omitted. |
 | route_tls_termination_mechanism | string | `""` | Route TLS termination mechanism. One of `Edge`, `Passthrough`. |
+| secretProvider | object | `{"type":"","vso":{"auth":{"appRole":{"mount":"approle","roleId":"","secretRef":""},"kubernetes":{"mount":"kubernetes","role":"","serviceAccount":"default"},"method":"kubernetes"},"connection":{"address":"","caBundleFrom":{},"skipTLSVerify":false,"vaultNamespace":""},"kvVersion":"v2","refreshAfter":"1h","secrets":{"admin_password_secret":{"mount":"","path":"","refreshAfter":""},"bundle_cacert_secret":{"mount":"","path":"","refreshAfter":""},"database_secret":{"mount":"","path":"","refreshAfter":""},"db_fields_encryption_secret":{"mount":"","path":"","refreshAfter":""},"eda_redis_secret":{"mount":"","path":"","refreshAfter":""},"ingress_tls_secret":{"mount":"","path":"","refreshAfter":""},"redis_secret":{"mount":"","path":"","refreshAfter":""},"route_tls_secret":{"mount":"","path":"","refreshAfter":""}}}}` | Secret provider plugin. Set `type` to activate a provider; leave empty to disable. Supported types: `vso` (Vault Secrets Operator). Each provider renders its own CRs — existing AAP config is untouched. |
+| secretProvider.type | string | `""` | Active provider. One of `vso`, or empty string to disable. |
+| secretProvider.vso.auth.appRole.mount | string | `"approle"` | Vault mount path for the AppRole auth method. |
+| secretProvider.vso.auth.appRole.roleId | string | `""` | AppRole Role ID. |
+| secretProvider.vso.auth.appRole.secretRef | string | `""` | Name of a K8s Secret containing the `role_secret_id` key. |
+| secretProvider.vso.auth.kubernetes.mount | string | `"kubernetes"` | Vault mount path for the Kubernetes auth method. |
+| secretProvider.vso.auth.kubernetes.role | string | `""` | Vault role name for Kubernetes auth. |
+| secretProvider.vso.auth.kubernetes.serviceAccount | string | `"default"` | ServiceAccount name whose JWT is exchanged for a Vault token. |
+| secretProvider.vso.auth.method | string | `"kubernetes"` | Auth method. One of `kubernetes`, `appRole`. |
+| secretProvider.vso.connection.address | string | `""` | Vault server address. Required when type=vso. |
+| secretProvider.vso.connection.caBundleFrom | object | `{}` | CA bundle source for Vault TLS. Shape: {secret: {name: "...", key: "..."}} |
+| secretProvider.vso.connection.skipTLSVerify | bool | `false` | Skip TLS verification. Not recommended for production. |
+| secretProvider.vso.connection.vaultNamespace | string | `""` | Vault namespace (HCP Vault / Vault Enterprise only). Leave empty for OSS Vault. |
+| secretProvider.vso.kvVersion | string | `"v2"` | KV engine version used for all VaultStaticSecrets. One of `v1`, `v2`. |
+| secretProvider.vso.refreshAfter | string | `"1h"` | Default sync interval applied to all VaultStaticSecrets. Can be overridden per secret. |
 | service_account_annotations | object | `{}` | Annotations to add to the ServiceAccount. |
 | service_annotations | object | `{}` | Annotations to add to the Service. |
 | service_type | string | `""` | Service type. One of `ClusterIP`, `NodePort`, `LoadBalancer`. |

@@ -1,0 +1,72 @@
+# ── VSO (Vault Secrets Operator) secret provider ──────────────────────────────
+# Demonstrates pulling AAP secrets from HashiCorp Vault via VSO.
+# Prerequisites:
+#   - VSO installed in the cluster (secrets.hashicorp.com CRDs present)
+#   - A Vault server reachable from the cluster
+#   - A Vault role configured for Kubernetes auth (or an AppRole with secretRef Secret)
+#
+# VSO will create the K8s Secrets named below; AAP reads them by those names.
+# Each VaultStaticSecret maps:
+#   mount  — the KV engine mount point in Vault (e.g. "secret", "kvv2")
+#   path   — the path within that mount, no "data/" prefix (e.g. "aap/admin")
+
+name: aap
+namespace: aap
+hostname: aap.apps.cluster.example.com
+
+no_log: true
+
+# AAP secret names — VSO will create K8s Secrets with these exact names.
+admin_password_secret: aap-admin-password
+database:
+  database_secret: aap-db-credentials
+redis:
+  redis_secret: aap-redis-credentials
+
+secretProvider:
+  type: vso
+
+  vso:
+    # ── VaultConnection ──────────────────────────────────────────────────────
+    connection:
+      address: https://vault.example.com:8200
+      # vaultNamespace: admin   # uncomment for HCP Vault or Vault Enterprise namespaces
+      skipTLSVerify: false
+      # caBundleFrom:           # uncomment to provide a custom CA cert
+      #   secret:
+      #     name: vault-ca-cert
+      #     key: ca.crt
+
+    # ── VaultAuth — Kubernetes auth ──────────────────────────────────────────
+    auth:
+      method: kubernetes
+      kubernetes:
+        role: aap-role
+        serviceAccount: default
+        mount: kubernetes
+
+    # ── AppRole auth (alternative to kubernetes above) ────────────────────────
+    # auth:
+    #   method: appRole
+    #   appRole:
+    #     roleId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    #     secretRef: aap-approle-secret   # K8s Secret with key role_secret_id
+    #     mount: approle
+
+    # ── KV engine config ─────────────────────────────────────────────────────
+    kvVersion: v2
+    refreshAfter: 1h
+
+    # ── Secrets (opt-in) ─────────────────────────────────────────────────────
+    # Only secrets with a non-empty mount+path are rendered.
+    # The destination K8s Secret name comes from the AAP field above.
+    secrets:
+      admin_password_secret:
+        mount: secret
+        path: aap/admin
+      database_secret:
+        mount: secret
+        path: aap/db
+      redis_secret:
+        mount: secret
+        path: aap/redis

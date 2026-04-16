@@ -244,3 +244,94 @@ feature_flags: {}
 
 # -- Arbitrary fields deep-merged last into the `AnsibleAutomationPlatform` spec. Nested keys are merged recursively.
 extraSpec: {}
+
+# ── Secret Provider (optional) ────────────────────────────────────────────────
+
+# -- Secret provider plugin. Set `type` to activate a provider; leave empty to disable.
+# Supported types: `vso` (Vault Secrets Operator).
+# Each provider renders its own CRs — existing AAP config is untouched.
+secretProvider:
+  # -- Active provider. One of `vso`, or empty string to disable.
+  type: ""
+
+  vso:
+    # ── VaultConnection ──────────────────────────────────────────────────────
+    connection:
+      # -- Vault server address. Required when type=vso.
+      address: ""
+      # -- Vault namespace (HCP Vault / Vault Enterprise only). Leave empty for OSS Vault.
+      vaultNamespace: ""
+      # -- Skip TLS verification. Not recommended for production.
+      skipTLSVerify: false
+      # -- CA bundle source for Vault TLS. Shape: {secret: {name: "...", key: "..."}}
+      caBundleFrom: {}
+
+    # ── VaultAuth ────────────────────────────────────────────────────────────
+    auth:
+      # -- Auth method. One of `kubernetes`, `appRole`.
+      method: kubernetes
+      kubernetes:
+        # -- Vault role name for Kubernetes auth.
+        role: ""
+        # -- ServiceAccount name whose JWT is exchanged for a Vault token.
+        serviceAccount: default
+        # -- Vault mount path for the Kubernetes auth method.
+        mount: kubernetes
+      appRole:
+        # -- AppRole Role ID.
+        roleId: ""
+        # -- Name of a K8s Secret containing the `role_secret_id` key.
+        secretRef: ""
+        # -- Vault mount path for the AppRole auth method.
+        mount: approle
+
+    # -- KV engine version used for all VaultStaticSecrets. One of `v1`, `v2`.
+    kvVersion: v2
+
+    # -- Default sync interval applied to all VaultStaticSecrets. Can be overridden per secret.
+    refreshAfter: 1h
+
+    # ── Secrets (opt-in per secret) ──────────────────────────────────────────
+    # A VaultStaticSecret is rendered only when `mount` is non-empty.
+    # The destination K8s Secret name is derived from the corresponding AAP field:
+    #   admin_password_secret       → .Values.admin_password_secret
+    #   bundle_cacert_secret        → .Values.bundle_cacert_secret
+    #   db_fields_encryption_secret → .Values.db_fields_encryption_secret
+    #   database_secret             → .Values.database.database_secret
+    #   redis_secret                → .Values.redis.redis_secret
+    #   eda_redis_secret            → .Values.redis.eda_redis_secret
+    #   route_tls_secret            → .Values.route_tls_secret
+    #   ingress_tls_secret          → .Values.ingress_tls_secret
+    secrets:
+      admin_password_secret:
+        mount: ""        # KV engine mount point (e.g. "secret")
+        path: ""         # path within mount, no "data/" prefix (e.g. "aap/admin")
+        refreshAfter: "" # overrides vso.refreshAfter when set
+      bundle_cacert_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      db_fields_encryption_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      database_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      redis_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      eda_redis_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      route_tls_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      ingress_tls_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""

@@ -185,6 +185,18 @@
       ],
       "type": "string"
     },
+    "ltm_route_enabled": {
+      "type": "boolean"
+    },
+    "ltm_route_hostname": {
+      "type": "string"
+    },
+    "ltm_route_annotations": {
+      "type": "object"
+    },
+    "ltm_route_labels": {
+      "type": "object"
+    },
     "extra_settings": {
       "description": "Environment variables to configure the application-level settings",
       "items": {
@@ -209,23 +221,10 @@
         }
       }
     },
-    "ltm_route_enabled": {
-      "description": "Deploy a site-local (LTM) OpenShift Route pointing to the AAP service. For active-passive site designs.",
-      "type": "boolean"
-    },
-    "ltm_route_hostname": {
-      "description": "Hostname for the LTM route. Optional — OpenShift auto-generates one if omitted.",
-      "type": "string"
-    },
-    "ltm_route_annotations": {
-      "description": "Annotations to add to the LTM Route object.",
-      "type": "object"
-    },
-    "ltm_route_labels": {
-      "description": "Additional labels to add to the LTM Route object.",
-      "type": "object"
-    },
     "extraSpec": {
+      "type": "object"
+    },
+    "secretProvider": {
       "type": "object"
     },
     "api": {
@@ -624,7 +623,6 @@
           "type": "string"
         },
         "file_storage_access_mode": {
-          "default": "ReadWriteMany",
           "description": "The file storage access mode.",
           "enum": [
             "",
