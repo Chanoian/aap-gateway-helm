@@ -2,6 +2,9 @@
 *.tgz
 .helm/
 
+# Git worktrees
+.worktrees/
+
 # Planning artifacts
 docs/
 
