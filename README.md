@@ -76,6 +76,7 @@ Ready-to-use values files are in [`examples/`](./examples/):
 | [`explicit-zero-replicas.yaml`](./examples/explicit-zero-replicas.yaml) | Verifies `replicas: 0` passes through correctly |
 | [`complex-crd-coverage.yaml`](./examples/complex-crd-coverage.yaml) | Exhaustive CRD field coverage across all components |
 | [`testing-full-stack.yaml`](./examples/testing-full-stack.yaml) | All components, labels/annotations, resource limits, internal DB |
+| [`vso.yaml`](./examples/vso.yaml) | Vault Secrets Operator integration (pulls AAP secrets from Vault) |
 
 ## Components
 
@@ -253,6 +254,62 @@ For component pods (controller, eda, hub), use the component pass-through as sho
 | `bundle_cacert_secret` | Secret with a custom CA bundle for TLS verification |
 | `db_fields_encryption_secret` | Secret for database field-level encryption key |
 
+These Secrets must exist in the cluster before AAP reconciles. You can create them manually, or use the chart's built-in secret provider integration below.
+
+## Secret Provider (optional)
+
+The chart has a pluggable secret provider system that creates the Kubernetes Secrets AAP needs by syncing them from an external secrets backend. Set `secretProvider.type` to activate a provider; leave it empty (the default) to manage secrets yourself.
+
+### Vault Secrets Operator (VSO)
+
+Requires [VSO](https://developer.hashicorp.com/vault/docs/platform/k8s/vso) installed in the cluster (`secrets.hashicorp.com` CRDs present).
+
+The chart renders one `VaultConnection`, one `VaultAuth`, and one `VaultStaticSecret` per secret you opt in to. The destination Kubernetes Secret name is derived from the corresponding AAP field — no duplicate config.
+
+```yaml
+# AAP side — the K8s Secret names AAP will read
+admin_password_secret: aap-admin-password
+database:
+  database_secret: aap-db-credentials
+
+# VSO side — where to pull them from Vault
+secretProvider:
+  type: vso
+  vso:
+    connection:
+      address: https://vault.example.com:8200
+    auth:
+      method: kubernetes      # or appRole
+      kubernetes:
+        role: aap-role
+        serviceAccount: default
+        mount: kubernetes
+    kvVersion: v2
+    refreshAfter: 1h
+    secrets:
+      admin_password_secret:
+        mount: secret
+        path: aap/admin       # path within the mount, no "data/" prefix
+      database_secret:
+        mount: secret
+        path: aap/db
+```
+
+For AppRole auth, replace the `auth` block:
+
+```yaml
+    auth:
+      method: appRole
+      appRole:
+        roleId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        secretRef: aap-approle-secret   # K8s Secret with key role_secret_id
+        mount: approle
+```
+
+See [`examples/vso.yaml`](./examples/vso.yaml) for a complete annotated example.
+
+**Adding other providers (ESO, CSI):** The `secretProvider.type` discriminator is the only switch. Each provider is a separate template file — adding ESO means adding `secretProvider.eso` config and a new template, with no changes to existing files.
+
 ## Active-Passive Failover
 
 ```yaml
@@ -376,6 +433,8 @@ Chart versioning is independent of the AAP operator version. A single chart work
 
 | Chart version | AAP compatibility |
 |---------------|-------------------|
+| `1.3.x` | AAP 2.5, 2.6 — adds VSO secret provider |
+| `1.2.x` | AAP 2.5, 2.6 |
 | `1.0.x` | AAP 2.5, 2.6 |
 
 The chart is published automatically to Quay whenever `Chart.yaml` is updated on `main`.
