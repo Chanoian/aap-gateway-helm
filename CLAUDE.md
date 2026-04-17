@@ -80,6 +80,7 @@ bash hack/test-version-extraction.sh
 - `explicit-zero-replicas.yaml` — verifies `replicas: 0` passes through correctly
 - `complex-crd-coverage.yaml` — exhaustive CRD field coverage across all components
 - `testing-full-stack.yaml` — all components, labels/annotations on all resources, resource limits, internal DB, real-deployment validated
+- `vso.yaml` — VSO (Vault Secrets Operator) integration; AppRole auth; five secrets opted in (admin password, gateway DB, controller DB, EDA DB, Redis)
 
 ### Release Strategy
 - All work happens on `main` — one branch, no version-specific branches
@@ -109,4 +110,5 @@ When AAP ships a new build (e.g. 2.6):
 
 ## Later Goals (not yet implemented)
 - OpenShift Route templates for LTM Purpose in case of Active Passive
-- HashiCorp VSO (VaultConnection, VaultAuth, VaultStaticSecret)
+- ESO (External Secrets Operator) secret provider plugin (`secretProvider.type: eso`)
+- CSI driver secret provider plugin (`secretProvider.type: csi`)
