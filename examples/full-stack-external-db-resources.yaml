@@ -11,6 +11,9 @@ no_log: true
 database:
   database_secret: aap-postgres-credentials
 
+controller:
+  postgres_configuration_secret: aap-controller-postgres-credentials
+
 redis:
   resource_requirements:
     requests:
@@ -49,6 +52,8 @@ controller:
 
 eda:
   disabled: false
+  database:
+    database_secret: aap-eda-postgres-credentials
   resource_requirements:
     requests:
       cpu: "250m"

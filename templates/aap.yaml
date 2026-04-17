@@ -154,12 +154,15 @@
 {{- $eda := dict }}
 {{- $_ := set $eda "disabled" .Values.eda.disabled }}
 {{- range $k, $v := .Values.eda }}
-  {{- if ne $k "disabled" }}
+  {{- if and (ne $k "disabled") (ne $k "database") }}
     {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
       {{- $_ := set $eda $k $v }}
     {{- end }}
   {{- end }}
 {{- end }}
+{{- $edaDb := dict }}
+{{- if .Values.eda.database.database_secret }}{{- $_ := set $edaDb "database_secret" .Values.eda.database.database_secret }}{{- end }}
+{{- if gt (len $edaDb) 0 }}{{- $_ := set $eda "database" $edaDb }}{{- end }}
 {{- if gt (len $eda) 0 }}{{- $_ := set $spec "eda" $eda }}{{- end }}
 
 {{- /* ── hub ────────────────────────────────────────────────────────────────── */}}

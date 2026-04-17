@@ -189,6 +189,8 @@ redis:
 controller:
   # -- Set `true` to disable AutomationController.
   disabled: false
+  # -- Name of an existing Secret with PostgreSQL connection info for the controller database.
+  postgres_configuration_secret: ""
   # -- Extra settings injected into controller config. Each item: `{setting: "name", value: "value"}`.
   extra_settings: []
 
@@ -199,6 +201,9 @@ eda:
   automation_server_url: ""
   # -- Extra settings injected into EDA config. Each item: `{setting: "name", value: "value"}`.
   extra_settings: []
+  database:
+    # -- Name of an existing Secret with external DB connection info for EDA. If set, the operator skips deploying PostgreSQL for EDA.
+    database_secret: ""
 
 hub:
   # -- Set `true` to disable Automation Hub.
@@ -263,24 +268,15 @@ secretProvider:
       vaultNamespace: ""
       # -- Skip TLS verification. Not recommended for production.
       skipTLSVerify: false
-      # -- CA bundle source for Vault TLS. Shape: {secret: {name: "...", key: "..."}}
-      caBundleFrom: {}
+      # -- Name of a K8s Secret containing the CA cert (`ca.crt` key) for Vault TLS verification.
+      caCertSecretRef: ""
 
     # ── VaultAuth ────────────────────────────────────────────────────────────
     auth:
-      # -- Auth method. One of `kubernetes`, `appRole`.
-      method: kubernetes
-      kubernetes:
-        # -- Vault role name for Kubernetes auth.
-        role: ""
-        # -- ServiceAccount name whose JWT is exchanged for a Vault token.
-        serviceAccount: default
-        # -- Vault mount path for the Kubernetes auth method.
-        mount: kubernetes
       appRole:
         # -- AppRole Role ID.
         roleId: ""
-        # -- Name of a K8s Secret containing the `role_secret_id` key.
+        # -- Name of a K8s Secret containing the AppRole secret_id under key `id`.
         secretRef: ""
         # -- Vault mount path for the AppRole auth method.
         mount: approle
@@ -294,14 +290,16 @@ secretProvider:
     # ── Secrets (opt-in per secret) ──────────────────────────────────────────
     # A VaultStaticSecret is rendered only when `mount` is non-empty.
     # The destination K8s Secret name is derived from the corresponding AAP field:
-    #   admin_password_secret       → .Values.admin_password_secret
-    #   bundle_cacert_secret        → .Values.bundle_cacert_secret
-    #   db_fields_encryption_secret → .Values.db_fields_encryption_secret
-    #   database_secret             → .Values.database.database_secret
-    #   redis_secret                → .Values.redis.redis_secret
-    #   eda_redis_secret            → .Values.redis.eda_redis_secret
-    #   route_tls_secret            → .Values.route_tls_secret
-    #   ingress_tls_secret          → .Values.ingress_tls_secret
+    #   admin_password_secret                  → .Values.admin_password_secret
+    #   bundle_cacert_secret                   → .Values.bundle_cacert_secret
+    #   db_fields_encryption_secret            → .Values.db_fields_encryption_secret
+    #   database_secret                        → .Values.database.database_secret
+    #   controller_postgres_configuration_secret → .Values.controller.postgres_configuration_secret
+    #   eda_database_secret                    → .Values.eda.database.database_secret
+    #   redis_secret                           → .Values.redis.redis_secret
+    #   eda_redis_secret                       → .Values.redis.eda_redis_secret
+    #   route_tls_secret                       → .Values.route_tls_secret
+    #   ingress_tls_secret                     → .Values.ingress_tls_secret
     secrets:
       admin_password_secret:
         mount: ""        # KV engine mount point (e.g. "secret")
@@ -316,6 +314,14 @@ secretProvider:
         path: ""
         refreshAfter: ""
       database_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      controller_postgres_configuration_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      eda_database_secret:
         mount: ""
         path: ""
         refreshAfter: ""

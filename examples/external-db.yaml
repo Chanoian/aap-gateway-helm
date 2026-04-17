@@ -14,6 +14,9 @@ database:
 
 controller:
   disabled: false
+  postgres_configuration_secret: aap-controller-postgres-credentials
 
 eda:
   disabled: false
+  database:
+    database_secret: aap-eda-postgres-credentials

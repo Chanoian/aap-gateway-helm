@@ -3,7 +3,7 @@
 # Prerequisites:
 #   - VSO installed in the cluster (secrets.hashicorp.com CRDs present)
 #   - A Vault server reachable from the cluster
-#   - A Vault role configured for Kubernetes auth (or an AppRole with secretRef Secret)
+#   - An AppRole configured in Vault with a K8s Secret holding the secret_id (key: `id`)
 #
 # VSO will create the K8s Secrets named below; AAP reads them by those names.
 # Each VaultStaticSecret maps:
@@ -20,6 +20,11 @@ no_log: true
 admin_password_secret: aap-admin-password
 database:
   database_secret: aap-db-credentials
+controller:
+  postgres_configuration_secret: aap-controller-db-credentials
+eda:
+  database:
+    database_secret: aap-eda-db-credentials
 redis:
   redis_secret: aap-redis-credentials
 
@@ -32,26 +37,14 @@ secretProvider:
       address: https://vault.example.com:8200
       # vaultNamespace: admin   # uncomment for HCP Vault or Vault Enterprise namespaces
       skipTLSVerify: false
-      # caBundleFrom:           # uncomment to provide a custom CA cert
-      #   secret:
-      #     name: vault-ca-cert
-      #     key: ca.crt
+      # caCertSecretRef: vault-ca-cert   # uncomment to provide a custom CA cert (K8s Secret with key ca.crt)
 
-    # ── VaultAuth — Kubernetes auth ──────────────────────────────────────────
+    # ── VaultAuth — AppRole auth ─────────────────────────────────────────────
     auth:
-      method: kubernetes
-      kubernetes:
-        role: aap-role
-        serviceAccount: default
-        mount: kubernetes
-
-    # ── AppRole auth (alternative to kubernetes above) ────────────────────────
-    # auth:
-    #   method: appRole
-    #   appRole:
-    #     roleId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-    #     secretRef: aap-approle-secret   # K8s Secret with key role_secret_id
-    #     mount: approle
+      appRole:
+        roleId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        secretRef: aap-approle-secret   # K8s Secret with key `id` containing the secret_id
+        mount: approle
 
     # ── KV engine config ─────────────────────────────────────────────────────
     kvVersion: v2
@@ -66,7 +59,13 @@ secretProvider:
         path: aap/admin
       database_secret:
         mount: secret
-        path: aap/db
+        path: aap/gateway-db
+      controller_postgres_configuration_secret:
+        mount: secret
+        path: aap/controller-db
+      eda_database_secret:
+        mount: secret
+        path: aap/eda-db
       redis_secret:
         mount: secret
         path: aap/redis
