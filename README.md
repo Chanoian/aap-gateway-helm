@@ -22,14 +22,14 @@ The chart is published to [quay.io/achanoia/aap-gateway](https://quay.io/achanoi
 ```bash
 # Install a specific version
 helm install aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.3.0 \
+  --version 1.3.1 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap --create-namespace
 
 # Upgrade
 helm upgrade aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.3.0 \
+  --version 1.3.1 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap
@@ -44,7 +44,7 @@ Available tags on Quay:
 
 | Tag | Description |
 |-----|-------------|
-| `1.3.0` | Exact patch version — use this for pinned, reproducible installs |
+| `1.3.1` | Exact patch version — use this for pinned, reproducible installs |
 | `1.0` | Minor alias — always points to the latest `1.0.x` patch |
 
 ### From Source
@@ -279,11 +279,10 @@ secretProvider:
     connection:
       address: https://vault.example.com:8200
     auth:
-      method: kubernetes      # or appRole
-      kubernetes:
-        role: aap-role
-        serviceAccount: default
-        mount: kubernetes
+      appRole:
+        roleId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        secretRef: aap-approle-secret   # K8s Secret with key `id` containing the secret_id
+        mount: approle
     kvVersion: v2
     refreshAfter: 1h
     secrets:
@@ -293,17 +292,6 @@ secretProvider:
       database_secret:
         mount: secret
         path: aap/db
-```
-
-For AppRole auth, replace the `auth` block:
-
-```yaml
-    auth:
-      method: appRole
-      appRole:
-        roleId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        secretRef: aap-approle-secret   # K8s Secret with key role_secret_id
-        mount: approle
 ```
 
 See [`examples/vso.yaml`](./examples/vso.yaml) for a complete annotated example.

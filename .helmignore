@@ -4,7 +4,8 @@
 .claude/
 memory/
 .gitignore
-*.md
+CLAUDE.md
+README.md.gotmpl
 docs/
 crds/
 examples/

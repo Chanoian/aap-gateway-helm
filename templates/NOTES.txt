@@ -23,3 +23,18 @@ Get the Gateway URL (once reconciled):
 
 Operator logs:
   oc logs -n {{ .Values.namespace }} -l control-plane=controller-manager --tail=50
+{{- if eq ((.Values.secretProvider).type) "vso" }}
+
+Secret provider: VSO (Vault Secrets Operator)
+  Check VaultConnection / VaultAuth status:
+    oc get vaultconnection,vaultauth -n {{ .Values.namespace }}
+  Check VaultStaticSecret sync status (should show Valid=True once synced):
+    oc get vaultstaticsecret -n {{ .Values.namespace }}
+  Verify destination Secrets were created by VSO:
+    oc get secret -n {{ .Values.namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+{{- end }}
+{{- if .Values.ltm_route_enabled }}
+
+LTM Route:
+  oc get route {{ .Values.name | default "aap" }}-ltm -n {{ .Values.namespace }}
+{{- end }}

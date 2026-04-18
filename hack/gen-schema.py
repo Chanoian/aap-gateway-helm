@@ -46,10 +46,10 @@ else:
     print(f"Using CRDs from crds/{versions[-1]}/ (latest)", file=sys.stderr)
 
 
-def load_crd_props(filename):
-    path = CRD_DIR / filename
+def load_crd_props(filename, crd_dir=None):
+    path = (crd_dir or CRD_DIR) / filename
     if not path.exists():
-        print(f"WARNING: {CRD_DIR.name}/{filename} not found", file=sys.stderr)
+        print(f"WARNING: {path} not found", file=sys.stderr)
         return {}
     crd = yaml.safe_load(path.read_text())
     return (
@@ -119,7 +119,7 @@ CHART_ONLY = {
 # These are skipped in the top-level scalar walk and handled individually below
 # (each section may draw from a different CRD source, e.g. hub uses automationhubs.yaml).
 # Add a key here when you add a new structured sub-section to values.yaml.
-SECTIONS = {"api", "database", "redis", "controller", "eda", "hub"}
+SECTIONS = {"api", "database", "redis", "controller", "eda", "hub", "secretProvider"}
 
 
 # ── Schema derivation ─────────────────────────────────────────────────────────
@@ -160,12 +160,63 @@ def field_schema(key, value, crd_props):
 
 
 def build_section(values_dict, crd_props):
-    """Walk a values.yaml dict and build a JSON Schema properties map."""
+    """Build a JSON Schema properties map for a section.
+
+    Merges two sources so pass-through fields get type validation:
+    - values.yaml keys: schema inferred from default value (and CRD when present)
+    - CRD keys not in values.yaml: schema taken directly from the CRD
+
+    Result: any field a user sets — whether modelled in values.yaml or passed
+    through directly from the CRD spec — is type-checked by `helm lint --strict`.
+    """
+    props = {
+        key: field_schema(key, value, crd_props)
+        for key, value in values_dict.items()
+    }
+    for key, crd_schema in crd_props.items():
+        if key in props:
+            continue
+        cleaned = {k: v for k, v in crd_schema.items() if k != "pattern"}
+        props[key] = cleaned or {"type": "string"}
+    return {"type": "object", "properties": props}
+
+
+VSO_CRD_DIR = REPO_ROOT / "crds" / "vso"
+
+
+def clean(props, key):
+    """Return a JSON Schema entry from CRD props, stripping description and pattern."""
+    p = props.get(key, {})
+    return {k: v for k, v in p.items() if k not in ("description", "pattern")} or {"type": "string"}
+
+
+def build_secret_provider_schema(values_sp, vconn, vauth, vss):
+    ap = vauth.get("appRole", {}).get("properties", {})
+    secret_entry = {"type": "object", "properties": {k: clean(vss, k) for k in ("mount", "path", "refreshAfter")}}
     return {
         "type": "object",
         "properties": {
-            key: field_schema(key, value, crd_props)
-            for key, value in values_dict.items()
+            "type": {"type": "string", "enum": ["", "vso"]},
+            "vso": {"type": "object", "properties": {
+                "connection": {"type": "object", "properties": {
+                    "address":         clean(vconn, "address"),
+                    "vaultNamespace":  {"type": "string"},
+                    "skipTLSVerify":   clean(vconn, "skipTLSVerify"),
+                    "caCertSecretRef": clean(vconn, "caCertSecretRef"),
+                }},
+                "auth": {"type": "object", "properties": {
+                    "appRole": {"type": "object", "required": ["roleId", "secretRef", "mount"], "properties": {
+                        "roleId":    clean(ap, "roleId"),
+                        "secretRef": clean(ap, "secretRef"),
+                        "mount":     clean(vauth, "mount"),
+                    }},
+                }},
+                "kvVersion":    {"type": "string", "enum": ["v1", "v2"], "default": "v2"},
+                "refreshAfter": clean(vss, "refreshAfter"),
+                "secrets": {"type": "object", "properties": {
+                    key: secret_entry for key in values_sp["vso"]["secrets"]
+                }},
+            }},
         },
     }
 
@@ -176,6 +227,10 @@ values = yaml.safe_load((REPO_ROOT / "values.yaml").read_text())
 
 aap = load_crd_props("ansibleautomationplatforms.yaml")
 hub = load_crd_props("automationhubs.yaml")
+
+vso_conn  = load_crd_props("secrets.hashicorp.com_vaultconnections.yaml", VSO_CRD_DIR)
+vso_auth  = load_crd_props("secrets.hashicorp.com_vaultauths.yaml",       VSO_CRD_DIR)
+vso_ss    = load_crd_props("secrets.hashicorp.com_vaultstaticsecrets.yaml", VSO_CRD_DIR)
 
 if not aap:
     print("WARNING: crds/ansibleautomationplatforms.yaml not found — top-level fields will be inferred from values.yaml defaults (normal for AAP 2.4)", file=sys.stderr)
@@ -194,8 +249,20 @@ for key, value in values.items():
 properties["api"]        = build_section(values["api"],        aap.get("api",      {}).get("properties", {}))
 properties["database"]   = build_section(values["database"],   aap.get("database", {}).get("properties", {}))
 properties["redis"]      = build_section(values["redis"],      aap.get("redis",    {}).get("properties", {}))
-properties["controller"] = build_section(values["controller"], {})
-properties["eda"]        = build_section(values["eda"],        {})
+
+# Controller — top-level fields from AutomationController CRD
+controller_crd = load_crd_props("automationcontrollers.yaml") if (CRD_DIR / "automationcontrollers.yaml").exists() else {}
+properties["controller"] = build_section(values["controller"], controller_crd)
+
+# EDA — top-level fields from EDA CRD; database sub-section from the same CRD
+eda_crd = load_crd_props("edas.yaml") if (CRD_DIR / "edas.yaml").exists() else {}
+eda_values = {k: v for k, v in values["eda"].items() if k != "database"}
+eda_properties = build_section(eda_values, eda_crd)["properties"]
+eda_db_props = eda_crd.get("database", {}).get("properties", {})
+eda_properties["database"] = build_section(values["eda"]["database"], eda_db_props)
+properties["eda"] = {"type": "object", "properties": eda_properties}
+
+properties["secretProvider"] = build_secret_provider_schema(values["secretProvider"], vso_conn, vso_auth, vso_ss)
 
 # Hub — top-level fields from automationhubs CRD; content/worker as sub-sections
 hub_values     = {k: v for k, v in values["hub"].items() if k not in ("content", "worker")}
