@@ -3554,6 +3554,10 @@
           },
           "type": "array"
         },
+        "db_fields_encryption_secret": {
+          "description": "Secret where the DB fields encryption key can be found. If not specified, one will be generated.",
+          "type": "string"
+        },
         "activation_worker": {
           "description": "Defines desired state of eda-activation-worker resources",
           "properties": {
@@ -4250,10 +4254,6 @@
               "type": "array"
             }
           }
-        },
-        "db_fields_encryption_secret": {
-          "description": "Secret where the DB fields encryption key can be found. If not specified, one will be generated.",
-          "type": "string"
         },
         "default_worker": {
           "description": "Defines desired state of eda-default-worker resources",
@@ -5904,22 +5904,9 @@
             },
             "secrets": {
               "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "admin_password_secret": {
-                  "type": "object",
-                  "properties": {
-                    "mount": {
-                      "type": "string"
-                    },
-                    "path": {
-                      "type": "string"
-                    },
-                    "refreshAfter": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "bundle_cacert_secret": {
                   "type": "object",
                   "properties": {
                     "mount": {
@@ -5975,63 +5962,21 @@
                     }
                   }
                 },
+                "eda_db_fields_encryption_secret": {
+                  "type": "object",
+                  "properties": {
+                    "mount": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "refreshAfter": {
+                      "type": "string"
+                    }
+                  }
+                },
                 "eda_database_secret": {
-                  "type": "object",
-                  "properties": {
-                    "mount": {
-                      "type": "string"
-                    },
-                    "path": {
-                      "type": "string"
-                    },
-                    "refreshAfter": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "redis_secret": {
-                  "type": "object",
-                  "properties": {
-                    "mount": {
-                      "type": "string"
-                    },
-                    "path": {
-                      "type": "string"
-                    },
-                    "refreshAfter": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "eda_redis_secret": {
-                  "type": "object",
-                  "properties": {
-                    "mount": {
-                      "type": "string"
-                    },
-                    "path": {
-                      "type": "string"
-                    },
-                    "refreshAfter": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "route_tls_secret": {
-                  "type": "object",
-                  "properties": {
-                    "mount": {
-                      "type": "string"
-                    },
-                    "path": {
-                      "type": "string"
-                    },
-                    "refreshAfter": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "ingress_tls_secret": {
                   "type": "object",
                   "properties": {
                     "mount": {

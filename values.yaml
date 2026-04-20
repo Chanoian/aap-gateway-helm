@@ -201,6 +201,8 @@ eda:
   automation_server_url: ""
   # -- Extra settings injected into EDA config. Each item: `{setting: "name", value: "value"}`.
   extra_settings: []
+  # -- Name of a Secret for EDA database field-level encryption key.
+  db_fields_encryption_secret: ""
   database:
     # -- Name of an existing Secret with external DB connection info for EDA. If set, the operator skips deploying PostgreSQL for EDA.
     database_secret: ""
@@ -291,24 +293,16 @@ secretProvider:
     # A VaultStaticSecret is rendered only when `mount` is non-empty.
     # The destination K8s Secret name is derived from the corresponding AAP field:
     #   admin_password_secret                  → .Values.admin_password_secret
-    #   bundle_cacert_secret                   → .Values.bundle_cacert_secret
     #   db_fields_encryption_secret            → .Values.db_fields_encryption_secret
     #   database_secret                        → .Values.database.database_secret
     #   controller_postgres_configuration_secret → .Values.controller.postgres_configuration_secret
+    #   eda_db_fields_encryption_secret        → .Values.eda.db_fields_encryption_secret
     #   eda_database_secret                    → .Values.eda.database.database_secret
-    #   redis_secret                           → .Values.redis.redis_secret
-    #   eda_redis_secret                       → .Values.redis.eda_redis_secret
-    #   route_tls_secret                       → .Values.route_tls_secret
-    #   ingress_tls_secret                     → .Values.ingress_tls_secret
     secrets:
       admin_password_secret:
         mount: ""        # KV engine mount point (e.g. "secret")
         path: ""         # path within mount, no "data/" prefix (e.g. "aap/admin")
         refreshAfter: "" # overrides vso.refreshAfter when set
-      bundle_cacert_secret:
-        mount: ""
-        path: ""
-        refreshAfter: ""
       db_fields_encryption_secret:
         mount: ""
         path: ""
@@ -321,23 +315,11 @@ secretProvider:
         mount: ""
         path: ""
         refreshAfter: ""
+      eda_db_fields_encryption_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
       eda_database_secret:
-        mount: ""
-        path: ""
-        refreshAfter: ""
-      redis_secret:
-        mount: ""
-        path: ""
-        refreshAfter: ""
-      eda_redis_secret:
-        mount: ""
-        path: ""
-        refreshAfter: ""
-      route_tls_secret:
-        mount: ""
-        path: ""
-        refreshAfter: ""
-      ingress_tls_secret:
         mount: ""
         path: ""
         refreshAfter: ""

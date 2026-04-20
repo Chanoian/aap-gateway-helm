@@ -22,14 +22,14 @@ The chart is published to [quay.io/achanoia/aap-gateway](https://quay.io/achanoi
 ```bash
 # Install a specific version
 helm install aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.3.2 \
+  --version 1.3.3 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap --create-namespace
 
 # Upgrade
 helm upgrade aap-gateway oci://quay.io/achanoia/aap-gateway \
-  --version 1.3.2 \
+  --version 1.3.3 \
   -f my-values.yaml \
   --set namespace=aap \
   -n aap
@@ -44,7 +44,7 @@ Available tags on Quay:
 
 | Tag | Description |
 |-----|-------------|
-| `1.3.2` | Exact patch version — use this for pinned, reproducible installs |
+| `1.3.3` | Exact patch version — use this for pinned, reproducible installs |
 | `1.0` | Minor alias — always points to the latest `1.0.x` patch |
 
 ### From Source
@@ -338,6 +338,7 @@ database:
 | db_fields_encryption_secret | string | `""` | Name of a Secret for database field-level encryption key. |
 | eda.automation_server_url | string | `""` | URL of the AutomationController. Operator auto-discovers if left empty. |
 | eda.database.database_secret | string | `""` | Name of an existing Secret with external DB connection info for EDA. If set, the operator skips deploying PostgreSQL for EDA. |
+| eda.db_fields_encryption_secret | string | `""` | Name of a Secret for EDA database field-level encryption key. |
 | eda.disabled | bool | `false` | Set `true` to disable Event-Driven Ansible. |
 | eda.extra_settings | list | `[]` | Extra settings injected into EDA config. Each item: `{setting: "name", value: "value"}`. |
 | extraSpec | object | `{}` | Arbitrary fields deep-merged last into the `AnsibleAutomationPlatform` spec. Nested keys are merged recursively. |
@@ -388,7 +389,7 @@ database:
 | route_host | string | `""` | Explicit route hostname (alternative to `hostname`). |
 | route_tls_secret | string | `""` | Name of the TLS Secret for the Route. Operator generates a cert if omitted. |
 | route_tls_termination_mechanism | string | `""` | Route TLS termination mechanism. One of `Edge`, `Passthrough`. |
-| secretProvider | object | `{"type":"","vso":{"auth":{"appRole":{"mount":"approle","roleId":"","secretRef":""}},"connection":{"address":"","caCertSecretRef":"","skipTLSVerify":false,"vaultNamespace":""},"kvVersion":"v2","refreshAfter":"1h","secrets":{"admin_password_secret":{"mount":"","path":"","refreshAfter":""},"bundle_cacert_secret":{"mount":"","path":"","refreshAfter":""},"controller_postgres_configuration_secret":{"mount":"","path":"","refreshAfter":""},"database_secret":{"mount":"","path":"","refreshAfter":""},"db_fields_encryption_secret":{"mount":"","path":"","refreshAfter":""},"eda_database_secret":{"mount":"","path":"","refreshAfter":""},"eda_redis_secret":{"mount":"","path":"","refreshAfter":""},"ingress_tls_secret":{"mount":"","path":"","refreshAfter":""},"redis_secret":{"mount":"","path":"","refreshAfter":""},"route_tls_secret":{"mount":"","path":"","refreshAfter":""}}}}` | Secret provider plugin. Set `type` to activate a provider; leave empty to disable. Supported types: `vso` (Vault Secrets Operator). Each provider renders its own CRs — existing AAP config is untouched. |
+| secretProvider | object | `{"type":"","vso":{"auth":{"appRole":{"mount":"approle","roleId":"","secretRef":""}},"connection":{"address":"","caCertSecretRef":"","skipTLSVerify":false,"vaultNamespace":""},"kvVersion":"v2","refreshAfter":"1h","secrets":{"admin_password_secret":{"mount":"","path":"","refreshAfter":""},"controller_postgres_configuration_secret":{"mount":"","path":"","refreshAfter":""},"database_secret":{"mount":"","path":"","refreshAfter":""},"db_fields_encryption_secret":{"mount":"","path":"","refreshAfter":""},"eda_database_secret":{"mount":"","path":"","refreshAfter":""},"eda_db_fields_encryption_secret":{"mount":"","path":"","refreshAfter":""}}}}` | Secret provider plugin. Set `type` to activate a provider; leave empty to disable. Supported types: `vso` (Vault Secrets Operator). Each provider renders its own CRs — existing AAP config is untouched. |
 | secretProvider.type | string | `""` | Active provider. One of `vso`, or empty string to disable. |
 | secretProvider.vso.auth.appRole.mount | string | `"approle"` | Vault mount path for the AppRole auth method. |
 | secretProvider.vso.auth.appRole.roleId | string | `""` | AppRole Role ID. |

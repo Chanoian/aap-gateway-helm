@@ -12,21 +12,20 @@
 
 name: aap
 namespace: aap
-hostname: aap.apps.cluster.example.com
 
 no_log: true
 
 # AAP secret names — VSO will create K8s Secrets with these exact names.
 admin_password_secret: aap-admin-password
+db_fields_encryption_secret: aap-gateway-fernet-key
 database:
   database_secret: aap-db-credentials
 controller:
   postgres_configuration_secret: aap-controller-db-credentials
 eda:
+  db_fields_encryption_secret: aap-eda-fernet-key
   database:
     database_secret: aap-eda-db-credentials
-redis:
-  redis_secret: aap-redis-credentials
 
 secretProvider:
   type: vso
@@ -57,15 +56,18 @@ secretProvider:
       admin_password_secret:
         mount: secret
         path: aap/admin
+      db_fields_encryption_secret:
+        mount: secret
+        path: aap/gateway-fernet
       database_secret:
         mount: secret
         path: aap/gateway-db
       controller_postgres_configuration_secret:
         mount: secret
         path: aap/controller-db
+      eda_db_fields_encryption_secret:
+        mount: secret
+        path: aap/eda-fernet
       eda_database_secret:
         mount: secret
         path: aap/eda-db
-      redis_secret:
-        mount: secret
-        path: aap/redis

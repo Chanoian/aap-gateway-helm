@@ -210,9 +210,13 @@ def build_secret_provider_schema(values_sp, vconn, vauth, vss):
                 }},
                 "kvVersion":    {"type": "string", "enum": ["v1", "v2"], "default": "v2"},
                 "refreshAfter": clean(vss, "refreshAfter"),
-                "secrets": {"type": "object", "properties": {
-                    key: secret_entry for key in values_sp["vso"]["secrets"]
-                }},
+                "secrets": {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {
+                        key: secret_entry for key in values_sp["vso"]["secrets"]
+                    },
+                },
             }},
         },
     }
