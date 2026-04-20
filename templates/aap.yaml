@@ -83,7 +83,7 @@
 {{- /* ── api sub-spec ─────────────────────────────────────────────────────── */}}
 {{- $api := dict
     "replicas"  .Values.api.replicas
-    "log_level" (.Values.api.log_level | default "INFO")
+    "log_level" .Values.api.log_level
 -}}
 {{- $apiRR := include "aap-gateway.resourceRequirements" .Values.api.resource_requirements | fromYaml }}
 {{- if gt (len $apiRR) 0 }}{{- $_ := set $api "resource_requirements" $apiRR }}{{- end }}
@@ -143,19 +143,19 @@
 {{- $_ := set $ctrl "disabled" .Values.controller.disabled }}
 {{- range $k, $v := .Values.controller }}
   {{- if ne $k "disabled" }}
-    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) }}
       {{- $_ := set $ctrl $k $v }}
     {{- end }}
   {{- end }}
 {{- end }}
-{{- if gt (len $ctrl) 0 }}{{- $_ := set $spec "controller" $ctrl }}{{- end }}
+{{- $_ := set $spec "controller" $ctrl }}
 
 {{- /* ── eda ────────────────────────────────────────────────────────────────── */}}
 {{- $eda := dict }}
 {{- $_ := set $eda "disabled" .Values.eda.disabled }}
 {{- range $k, $v := .Values.eda }}
   {{- if and (ne $k "disabled") (ne $k "database") }}
-    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) }}
       {{- $_ := set $eda $k $v }}
     {{- end }}
   {{- end }}
@@ -163,21 +163,21 @@
 {{- $edaDb := dict }}
 {{- if .Values.eda.database.database_secret }}{{- $_ := set $edaDb "database_secret" .Values.eda.database.database_secret }}{{- end }}
 {{- if gt (len $edaDb) 0 }}{{- $_ := set $eda "database" $edaDb }}{{- end }}
-{{- if gt (len $eda) 0 }}{{- $_ := set $spec "eda" $eda }}{{- end }}
+{{- $_ := set $spec "eda" $eda }}
 
 {{- /* ── hub ────────────────────────────────────────────────────────────────── */}}
 {{- $hub := dict }}
 {{- $_ := set $hub "disabled" .Values.hub.disabled }}
 {{- range $k, $v := .Values.hub }}
   {{- if and (ne $k "disabled") (ne $k "content") (ne $k "worker") }}
-    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+    {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) }}
       {{- $_ := set $hub $k $v }}
     {{- end }}
   {{- end }}
 {{- end }}
 {{- $content := dict }}
 {{- range $k, $v := .Values.hub.content }}
-  {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+  {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) }}
     {{- if not (and (eq $k "replicas") (eq (int $v) 2)) }}
       {{- $_ := set $content $k $v }}
     {{- end }}
@@ -186,14 +186,14 @@
 {{- if gt (len $content) 0 }}{{- $_ := set $hub "content" $content }}{{- end }}
 {{- $worker := dict }}
 {{- range $k, $v := .Values.hub.worker }}
-  {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) (kindIs "int64" $v) }}
+  {{- if or $v (kindIs "bool" $v) (kindIs "float64" $v) }}
     {{- if not (and (eq $k "replicas") (eq (int $v) 2)) }}
       {{- $_ := set $worker $k $v }}
     {{- end }}
   {{- end }}
 {{- end }}
 {{- if gt (len $worker) 0 }}{{- $_ := set $hub "worker" $worker }}{{- end }}
-{{- if gt (len $hub) 0 }}{{- $_ := set $spec "hub" $hub }}{{- end }}
+{{- $_ := set $spec "hub" $hub }}
 
 {{- /* ── top-level extraSpec override (deep merge) ────────────────────────────
      Uses aap-gateway.deepMerge so extraSpec.api.strategy merges into the

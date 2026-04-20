@@ -11,9 +11,6 @@ no_log: true
 database:
   database_secret: aap-postgres-credentials
 
-controller:
-  postgres_configuration_secret: aap-controller-postgres-credentials
-
 redis:
   resource_requirements:
     requests:
@@ -35,6 +32,7 @@ api:
 
 controller:
   disabled: false
+  postgres_configuration_secret: aap-controller-postgres-credentials
   web_resource_requirements:
     requests:
       cpu: "500m"

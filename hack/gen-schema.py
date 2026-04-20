@@ -84,12 +84,9 @@ RESOURCE_REFS = {
 # causing `helm lint --strict` to reject the YAML-object syntax in values files.
 # Add a field here when: the CRD says string, values.yaml uses an object/map,
 # and the template calls toJson on it.
-# Note: feature_flags is listed here as a safety guard but is effectively
-# unreachable — CHART_ONLY is checked first in field_schema() and takes precedence.
 FORCE_OBJECT = {
     "route_annotations", "ingress_annotations",
     "service_annotations", "service_account_annotations",
-    "feature_flags",
 }
 
 # Fields that have a CRD enum but whose chart default is "" (meaning "let the

@@ -1,11 +1,4 @@
 {{/*
-aap-gateway.name — chart name truncated to 63 chars
-*/}}
-{{- define "aap-gateway.name" -}}
-{{- .Chart.Name | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
 aap-gateway.chart — chart label (name-version)
 */}}
 {{- define "aap-gateway.chart" -}}
@@ -17,7 +10,7 @@ aap-gateway.labels — standard Helm labels applied to all resources
 */}}
 {{- define "aap-gateway.labels" -}}
 helm.sh/chart: {{ include "aap-gateway.chart" . }}
-app.kubernetes.io/name: {{ include "aap-gateway.name" . }}
+app.kubernetes.io/name: {{ .Chart.Name }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
