@@ -12,6 +12,7 @@ keywords:
   - openshift
   - redhat
 home: https://github.com/Chanoian/aap-gateway-helm
+icon: https://raw.githubusercontent.com/Chanoian/aap-gateway-helm/main/icon.svg
 sources:
   - https://github.com/Chanoian/aap-gateway-helm
 maintainers:

@@ -1,0 +1,55 @@
+<svg width="512" height="512" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">AAP Gateway Helm Chart Icon</title>
+  <desc id="desc">A stylized helm wheel around an automation gateway with connected platform nodes, representing the aap-gateway Helm chart for OpenShift.</desc>
+  <defs>
+    <linearGradient id="bg" x1="44" y1="36" x2="210" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="1" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="64" y1="56" x2="192" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8"/>
+      <stop offset="0.55" stop-color="#14B8A6"/>
+      <stop offset="1" stop-color="#FB7185"/>
+    </linearGradient>
+    <linearGradient id="gate" x1="91" y1="88" x2="165" y2="176" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E0F2FE"/>
+      <stop offset="1" stop-color="#7DD3FC"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(128 126) rotate(90) scale(100)">
+      <stop stop-color="#22D3EE" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#22D3EE" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect x="20" y="20" width="216" height="216" rx="52" fill="url(#bg)"/>
+  <rect x="20" y="20" width="216" height="216" rx="52" fill="url(#glow)"/>
+
+  <g opacity="0.95">
+    <path d="M128 46V68" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M128 188V210" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M46 128H68" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M188 128H210" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M70.02 70.02L85.58 85.58" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M170.42 170.42L185.98 185.98" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M185.98 70.02L170.42 85.58" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M85.58 170.42L70.02 185.98" stroke="url(#ring)" stroke-width="10" stroke-linecap="round"/>
+  </g>
+
+  <circle cx="128" cy="128" r="70" stroke="url(#ring)" stroke-width="12"/>
+  <circle cx="128" cy="128" r="50" fill="#0B1220" stroke="#334155" stroke-width="2"/>
+
+  <path d="M128 84C151.196 84 170 102.804 170 126V170H86V126C86 102.804 104.804 84 128 84Z" fill="url(#gate)"/>
+  <path d="M128 99C142.912 99 155 111.088 155 126V170H101V126C101 111.088 113.088 99 128 99Z" fill="#0F172A"/>
+  <rect x="120" y="132" width="16" height="38" rx="8" fill="#38BDF8"/>
+
+  <path d="M73 107L103 120" stroke="#67E8F9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M128 74L128 108" stroke="#67E8F9" stroke-width="5" stroke-linecap="round"/>
+  <path d="M183 107L153 120" stroke="#67E8F9" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M86 176H170" stroke="#334155" stroke-width="6" stroke-linecap="round"/>
+
+  <circle cx="73" cy="107" r="10" fill="#F97316"/>
+  <circle cx="128" cy="74" r="10" fill="#22D3EE"/>
+  <circle cx="183" cy="107" r="10" fill="#F43F5E"/>
+  <circle cx="98" cy="188" r="8" fill="#14B8A6"/>
+  <circle cx="158" cy="188" r="8" fill="#38BDF8"/>
+</svg>
