@@ -10,9 +10,7 @@ aap-gateway.labels — standard Helm labels applied to all resources
 */}}
 {{- define "aap-gateway.labels" -}}
 helm.sh/chart: {{ include "aap-gateway.chart" . }}
-app.kubernetes.io/name: {{ .Chart.Name }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
