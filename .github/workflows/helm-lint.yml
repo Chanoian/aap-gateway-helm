@@ -21,6 +21,20 @@ jobs:
         with:
           version: "latest"
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Verify values.schema.json is in sync
+        run: |
+          pip install pyyaml
+          python3 hack/gen-schema.py
+          if ! git diff --exit-code values.schema.json; then
+            echo "::error::values.schema.json is stale. Run 'python3 hack/gen-schema.py' locally and commit the result."
+            exit 1
+          fi
+
       - name: Lint examples
         run: |
           for f in examples/*.yaml; do

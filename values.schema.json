@@ -650,6 +650,11 @@
           "description": "Secret where the database configuration can be found",
           "type": "string"
         },
+        "secret_key_secret": {
+          "description": "Secret where the secret key can be found",
+          "maxLength": 255,
+          "type": "string"
+        },
         "extra_settings": {
           "description": "Extra settings to specify for AWX",
           "items": {
@@ -2089,11 +2094,6 @@
             }
           },
           "type": "object"
-        },
-        "secret_key_secret": {
-          "description": "Secret where the secret key can be found",
-          "maxLength": 255,
-          "type": "string"
         },
         "security_context_settings": {
           "description": "Key/values that will be set under the pod-level securityContext field",
@@ -5949,6 +5949,20 @@
                   }
                 },
                 "controller_postgres_configuration_secret": {
+                  "type": "object",
+                  "properties": {
+                    "mount": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "refreshAfter": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "controller_secret_key_secret": {
                   "type": "object",
                   "properties": {
                     "mount": {

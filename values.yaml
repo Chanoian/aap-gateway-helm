@@ -191,6 +191,8 @@ controller:
   disabled: false
   # -- Name of an existing Secret with PostgreSQL connection info for the controller database.
   postgres_configuration_secret: ""
+  # -- Name of an existing Secret with key `secret_key` holding the controller's Django SECRET_KEY. Operator generates one if omitted.
+  secret_key_secret: ""
   # -- Extra settings injected into controller config. Each item: `{setting: "name", value: "value"}`.
   extra_settings: []
 
@@ -296,6 +298,7 @@ secretProvider:
     #   db_fields_encryption_secret            → .Values.db_fields_encryption_secret
     #   database_secret                        → .Values.database.database_secret
     #   controller_postgres_configuration_secret → .Values.controller.postgres_configuration_secret
+    #   controller_secret_key_secret           → .Values.controller.secret_key_secret
     #   eda_db_fields_encryption_secret        → .Values.eda.db_fields_encryption_secret
     #   eda_database_secret                    → .Values.eda.database.database_secret
     secrets:
@@ -312,6 +315,10 @@ secretProvider:
         path: ""
         refreshAfter: ""
       controller_postgres_configuration_secret:
+        mount: ""
+        path: ""
+        refreshAfter: ""
+      controller_secret_key_secret:
         mount: ""
         path: ""
         refreshAfter: ""

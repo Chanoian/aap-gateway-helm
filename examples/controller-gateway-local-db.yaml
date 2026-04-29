@@ -1,0 +1,15 @@
+# ── Controller + Gateway — local database ────────────────────────────────────
+# Gateway + AutomationController only. Hub and EDA disabled.
+# Database and Redis are deployed in-cluster by the operator (no external secrets).
+
+name: aap
+namespace: aap
+
+controller:
+  disabled: false
+
+eda:
+  disabled: true
+
+hub:
+  disabled: true
