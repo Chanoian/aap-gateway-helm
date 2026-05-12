@@ -1,0 +1,53 @@
+# ── VSO with EDA disabled ──────────────────────────────────────────────────────
+# Same as vso.yaml but with EDA disabled — verifies that EDA-related
+# VaultStaticSecrets are correctly skipped and no nil-pointer errors occur.
+
+name: aap
+namespace: aap
+
+no_log: true
+
+admin_password_secret: aap-admin-password
+db_fields_encryption_secret: aap-gateway-fernet-key
+database:
+  database_secret: aap-db-credentials
+controller:
+  postgres_configuration_secret: aap-controller-db-credentials
+  secret_key_secret: aap-controller-secret-key
+
+eda:
+  disabled: true
+
+secretProvider:
+  type: vso
+
+  vso:
+    connection:
+      address: https://vault.example.com:8200
+      skipTLSVerify: false
+
+    auth:
+      appRole:
+        roleId: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        secretRef: aap-approle-secret
+        mount: approle
+
+    kvVersion: v2
+    refreshAfter: 1h
+
+    secrets:
+      admin_password_secret:
+        mount: secret
+        path: aap/admin
+      db_fields_encryption_secret:
+        mount: secret
+        path: aap/gateway-fernet
+      database_secret:
+        mount: secret
+        path: aap/gateway-db
+      controller_postgres_configuration_secret:
+        mount: secret
+        path: aap/controller-db
+      controller_secret_key_secret:
+        mount: secret
+        path: aap/controller-secret-key

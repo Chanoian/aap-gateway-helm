@@ -77,6 +77,8 @@ Ready-to-use values files are in [`examples/`](./examples/):
 | [`complex-crd-coverage.yaml`](./examples/complex-crd-coverage.yaml) | Exhaustive CRD field coverage across all components |
 | [`testing-full-stack.yaml`](./examples/testing-full-stack.yaml) | All components, labels/annotations, resource limits, internal DB |
 | [`vso.yaml`](./examples/vso.yaml) | Vault Secrets Operator integration (pulls AAP secrets from Vault) |
+| [`controller-gateway-local-db.yaml`](./examples/controller-gateway-local-db.yaml) | Controller + Gateway only, hub/EDA disabled, internal DB |
+| [`ltm-route.yaml`](./examples/ltm-route.yaml) | Site-local LTM Route for active-passive designs |
 
 ## Components
 
@@ -128,7 +130,7 @@ hub:
         memory: "512Mi"
 ```
 
-Refer to the CRD definitions in [`crds/`](./crds/) for all available fields per AAP version (reference only — CRDs are installed by the AAP Operator, not this chart).
+Refer to the CRD definitions in [`crds/`](./crds/) for all available fields per AAP version (reference only — CRDs are installed by the AAP Operator, not this chart). The `crds/2.4/` directory contains controller, hub, and EDA CRDs for migration reference; 2.4 has no gateway/platform CRD.
 
 > **Note — string-typed complex fields:** Some fields in the child CRDs (`AutomationController`, `EDA`, `AutomationHub`) look like objects or arrays but are declared as `type: string` (JSON-encoded). Passing these as native YAML will cause the child CR admission webhook to reject them. Before setting any structured-looking field on a component, check its type in `crds/<version>/`. If it says `type: string`, pass it as a pre-serialized JSON string via `extraSpec`:
 >

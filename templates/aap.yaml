@@ -161,7 +161,7 @@
   {{- end }}
 {{- end }}
 {{- $edaDb := dict }}
-{{- if .Values.eda.database.database_secret }}{{- $_ := set $edaDb "database_secret" .Values.eda.database.database_secret }}{{- end }}
+{{- if and (.Values.eda.database) (.Values.eda.database.database_secret) }}{{- $_ := set $edaDb "database_secret" .Values.eda.database.database_secret }}{{- end }}
 {{- if gt (len $edaDb) 0 }}{{- $_ := set $eda "database" $edaDb }}{{- end }}
 {{- $_ := set $spec "eda" $eda }}
 
