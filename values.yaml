@@ -288,6 +288,9 @@ secretProvider:
     # -- KV engine version used for all VaultStaticSecrets. One of `v1`, `v2`.
     kvVersion: v2
 
+    # -- Vault project name prepended to every secret's path (e.g. "aap" → "aap/admin").
+    vaultProject: ""
+
     # -- Default sync interval applied to all VaultStaticSecrets. Can be overridden per secret.
     refreshAfter: 1h
 
