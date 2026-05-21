@@ -1,0 +1,27 @@
+# ── Full stack — internal database with storage class ─────────────────────────
+# All components enabled with operator-managed PostgreSQL using a specific
+# StorageClass for the database PVC.
+# Good for: OpenShift clusters where the default StorageClass is not suitable
+# for database workloads (e.g. prefer block storage over CephFS).
+
+name: aap
+namespace: aap
+hostname: aap.apps.cluster.example.com
+
+database:
+  postgres_storage_class: ocs-external-storagecluster-ceph-rbd
+  storage_requirements:
+    requests:
+      storage: 50Gi
+
+controller:
+  disabled: false
+
+eda:
+  disabled: false
+
+hub:
+  disabled: false
+  file_storage_storage_class: ocs-external-storagecluster-cephfs
+  file_storage_size: 100Gi
+  file_storage_access_mode: ReadWriteMany
