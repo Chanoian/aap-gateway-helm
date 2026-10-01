@@ -1165,8 +1165,8 @@ spec:
                 description: The arguments to be passed to initialize the database
                 type: string
               postgres_keep_pvc_after_upgrade:
-                description: Specify whether or not to keep the old PVC after PostgreSQL
-                  upgrades
+                description: (Deprecated) Specify whether or not to keep the old PVC
+                  after PostgreSQL upgrades
                 type: boolean
               postgres_label_selector:
                 description: Label selector used to identify postgres pod for executing
@@ -2478,4 +2478,3 @@ spec:
     storage: true
     subresources:
       status: {}
-

@@ -713,6 +713,43 @@ spec:
               postgres_image_version:
                 description: PostgreSQL container image version to use
                 type: string
+              proxy:
+                description: The gateway proxy (envoy) container configuration.
+                properties:
+                  concurrency:
+                    description: Number of Envoy worker threads. 0 means one per CPU
+                      core (Envoy default). Set this to limit worker threads on high-core-count
+                      nodes.
+                    minimum: 0
+                    type: integer
+                  resource_requirements:
+                    description: Resource requirements for the gateway proxy container.
+                    properties:
+                      limits:
+                        properties:
+                          cpu:
+                            type: string
+                          memory:
+                            type: string
+                          storage:
+                            type: string
+                        type: object
+                      requests:
+                        properties:
+                          cpu:
+                            type: string
+                          memory:
+                            type: string
+                          storage:
+                            type: string
+                        type: object
+                    type: object
+                  security_context:
+                    description: Settings to apply to the securityContext field of
+                      the proxy container.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                type: object
               public_base_url:
                 description: Public base URL for AAP
                 type: string
@@ -1005,4 +1042,3 @@ spec:
     storage: true
     subresources:
       status: {}
-

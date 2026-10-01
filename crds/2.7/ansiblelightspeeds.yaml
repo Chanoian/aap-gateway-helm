@@ -822,9 +822,8 @@ spec:
                       Openshift)
                     type: string
                   postgres_keep_pvc_after_upgrade:
-                    default: true
-                    description: Specify whether or not to keep the old PVC after
-                      PostgreSQL upgrades
+                    description: (Deprecated) Specify whether or not to keep the old
+                      PVC after PostgreSQL upgrades
                     type: boolean
                   postgres_ssl_mode:
                     description: 'Configure PostgreSQL connection sslmode option.
@@ -1156,4 +1155,3 @@ spec:
     storage: true
     subresources:
       status: {}
-
