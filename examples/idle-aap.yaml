@@ -1,0 +1,16 @@
+# ── Idle AAP — controller + EDA + gateway, scaled down ────────────────────────
+# All components enabled but idle_aap scales replicas to zero.
+# Good for: active-passive designs, standby sites.
+
+name: aap
+namespace: aap
+idle_aap: true
+
+controller:
+  disabled: false
+
+eda:
+  disabled: false
+
+hub:
+  disabled: true
