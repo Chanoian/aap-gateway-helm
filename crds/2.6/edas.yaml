@@ -778,8 +778,8 @@ spec:
                       Openshift)
                     type: string
                   postgres_keep_pvc_after_upgrade:
-                    description: Specify whether or not to keep the old PVC after
-                      PostgreSQL upgrades
+                    description: (Deprecated) Specify whether or not to keep the old
+                      PVC after PostgreSQL upgrades
                     type: boolean
                   postgres_ssl_mode:
                     description: 'Configure PostgreSQL connection sslmode option.
@@ -1679,7 +1679,7 @@ spec:
                 type: integer
               old_postgres_configuration_secret:
                 description: Secret where the old database configuration can be found
-                  for data migration
+                  for data migration (DEPRECATED)
                 maxLength: 255
                 pattern: ^[a-zA-Z0-9][-a-zA-Z0-9]{0,253}[a-zA-Z0-9]$
                 type: string
@@ -2910,6 +2910,19 @@ spec:
               rule: '!has(self.event_stream) || !has(self.event_stream.prefix) ||
                 !has(self.event_stream.mtls_prefix) || self.event_stream.prefix !=
                 self.event_stream.mtls_prefix'
+            - message: Both image and image_version must be set when required
+              rule: has(self.image) && has(self.image_version) || !has(self.image)
+                && !has(self.image_version)
+            - message: Both image_web and image_web_version must be set when required
+              rule: has(self.image_web) && has(self.image_web_version) || !has(self.image_web)
+                && !has(self.image_web_version)
+            - message: Both redis_image and redis_image_version must be set when required
+              rule: has(self.redis_image) && has(self.redis_image_version) || !has(self.redis_image)
+                && !has(self.redis_image_version)
+            - message: Both postgres_image and postgres_image_version must be set
+                when required
+              rule: has(self.postgres_image) && has(self.postgres_image_version) ||
+                !has(self.postgres_image) && !has(self.postgres_image_version)
           status:
             description: Status defines the observed state of EDA
             properties:

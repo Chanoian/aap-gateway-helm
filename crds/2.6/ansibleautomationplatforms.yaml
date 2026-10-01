@@ -648,6 +648,10 @@ spec:
                 description: MCP defines the desired state of the Ansible MCP Server
                 type: object
                 x-kubernetes-preserve-unknown-fields: true
+              metrics:
+                description: Metrics defines the desired state of MetricsService
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               no_log:
                 default: true
                 description: Configure no_log for no_log tasks
@@ -658,6 +662,43 @@ spec:
               postgres_image_version:
                 description: PostgreSQL container image version to use
                 type: string
+              proxy:
+                description: The gateway proxy (envoy) container configuration.
+                properties:
+                  concurrency:
+                    description: Number of Envoy worker threads. 0 means one per CPU
+                      core (Envoy default). Set this to limit worker threads on high-core-count
+                      nodes.
+                    minimum: 0
+                    type: integer
+                  resource_requirements:
+                    description: Resource requirements for the gateway proxy container.
+                    properties:
+                      limits:
+                        properties:
+                          cpu:
+                            type: string
+                          memory:
+                            type: string
+                          storage:
+                            type: string
+                        type: object
+                      requests:
+                        properties:
+                          cpu:
+                            type: string
+                          memory:
+                            type: string
+                          storage:
+                            type: string
+                        type: object
+                    type: object
+                  security_context:
+                    description: Settings to apply to the securityContext field of
+                      the proxy container.
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                type: object
               public_base_url:
                 description: Public base URL for AAP
                 type: string
@@ -883,6 +924,23 @@ spec:
                 - nodeport
                 type: string
             type: object
+            x-kubernetes-validations:
+            - message: Both image and image_version must be set together or both must
+                be unset
+              rule: has(self.image) && has(self.image_version) || !has(self.image)
+                && !has(self.image_version)
+            - message: Both image_proxy and image_proxy_version must be set together
+                or both must be unset
+              rule: has(self.image_proxy) && has(self.image_proxy_version) || !has(self.image_proxy)
+                && !has(self.image_proxy_version)
+            - message: Both postgres_image and postgres_image_version must be set
+                together or both must be unset
+              rule: has(self.postgres_image) && has(self.postgres_image_version) ||
+                !has(self.postgres_image) && !has(self.postgres_image_version)
+            - message: Both redis_image and redis_image_version must be set together
+                or both must be unset
+              rule: has(self.redis_image) && has(self.redis_image_version) || !has(self.redis_image)
+                && !has(self.redis_image_version)
           status:
             description: Status defines the observed state of AnsibleAutomationPlatform
             properties:

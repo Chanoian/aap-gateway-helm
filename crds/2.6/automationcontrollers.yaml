@@ -790,7 +790,7 @@ spec:
                 type: integer
               old_postgres_configuration_secret:
                 description: Secret where the old database configuration can be found
-                  for data migration
+                  for data migration (DEPRECATED)
                 maxLength: 255
                 pattern: ^[a-zA-Z0-9][-a-zA-Z0-9]{0,253}[a-zA-Z0-9]$
                 type: string
@@ -868,8 +868,8 @@ spec:
                     type: object
                 type: object
               postgres_keep_pvc_after_upgrade:
-                description: Specify whether or not to keep the old PVC after PostgreSQL
-                  upgrades
+                description: (Deprecated) Specify whether or not to keep the old PVC
+                  after PostgreSQL upgrades
                 type: boolean
               postgres_keepalives:
                 default: true

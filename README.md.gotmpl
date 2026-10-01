@@ -157,7 +157,7 @@ Important differences when targeting AAP 2.7:
 
 The schema currently allows unknown fields in most sections and does not enforce Kubernetes CEL rules. Removed fields and incomplete image/version pairs can therefore pass Helm validation. Validate rendered manifests against the target cluster and check reconciliation before relying on a deployment.
 
-The chart does not yet select validation rules by operator version. The checked-in 2.5 and 2.6 CRD snapshots are byte-for-byte identical; their provenance should be verified before relying on them for version-specific compatibility.
+The chart does not yet select validation rules by operator version. The 2.6 snapshots were refreshed from the installed `stable-2.6` operator build `2.6.0+0.1789677985` on OpenShift `4.22.15` on 2026-10-01. They include new Platform `metrics` and `proxy` fields, Hub PostgreSQL/Redis image-version fields, and image/version pairing validations for Platform, Hub, EDA, and Lightspeed. Lightspeed also removes the default for the deprecated `postgres_keep_pvc_after_upgrade` field. These snapshots are reference definitions; the operator manages the cluster CRDs. The 2.5 snapshot provenance remains unverified.
 
 ## Database
 

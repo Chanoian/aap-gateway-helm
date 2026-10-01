@@ -415,6 +415,9 @@ spec:
               postgres_image:
                 description: Registry path to the PostgreSQL container to use
                 type: string
+              postgres_image_version:
+                description: PostgreSQL container image version to use
+                type: string
               postgres_init_container_commands:
                 description: Customize the postgres init container commands (Non Openshift)
                 type: string
@@ -422,8 +425,8 @@ spec:
                 description: The arguments to be passed to initialize the database
                 type: string
               postgres_keep_pvc_after_upgrade:
-                description: Specify whether or not to keep the old PVC after PostgreSQL
-                  upgrades
+                description: (Deprecated) Specify whether or not to keep the old PVC
+                  after PostgreSQL upgrades
                 type: boolean
               postgres_label_selector:
                 description: Label selector used to identify postgres pod for executing
@@ -431,7 +434,7 @@ spec:
                 type: string
               postgres_migrant_configuration_secret:
                 description: Secret where the old database configuration can be found
-                  for data migration
+                  for data migration (DEPRECATED)
                 type: string
               postgres_resource_requirements:
                 description: Resource requirements for the PostgreSQL container
@@ -594,6 +597,9 @@ spec:
                 type: boolean
               redis_image:
                 description: The image name for the redis image.
+                type: string
+              redis_image_version:
+                description: Redis container image version to use
                 type: string
               redis_resource_requirements:
                 description: (Deprecated, use redis.resource_requirements instead)
@@ -915,6 +921,20 @@ spec:
                     type: object
                 type: object
             type: object
+            x-kubernetes-validations:
+            - message: Both image and image_version must be set when required
+              rule: has(self.image) && has(self.image_version) || !has(self.image)
+                && !has(self.image_version)
+            - message: Both image_web and image_web_version must be set when required
+              rule: has(self.image_web) && has(self.image_web_version) || !has(self.image_web)
+                && !has(self.image_web_version)
+            - message: Both redis_image and redis_image_version must be set when required
+              rule: has(self.redis_image) && has(self.redis_image_version) || !has(self.redis_image)
+                && !has(self.redis_image_version)
+            - message: Both postgres_image and postgres_image_version must be set
+                when required
+              rule: has(self.postgres_image) && has(self.postgres_image_version) ||
+                !has(self.postgres_image) && !has(self.postgres_image_version)
           status:
             properties:
               adminPasswordSecret:
