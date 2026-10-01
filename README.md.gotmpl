@@ -3,7 +3,7 @@
 [![Helm Lint](https://github.com/Chanoian/aap-gateway-helm/actions/workflows/helm-lint.yml/badge.svg?branch=main)](https://github.com/Chanoian/aap-gateway-helm/actions/workflows/helm-lint.yml)
 [![Helm Publish](https://github.com/Chanoian/aap-gateway-helm/actions/workflows/helm-publish.yml/badge.svg?branch=main)](https://github.com/Chanoian/aap-gateway-helm/actions/workflows/helm-publish.yml)
 
-A community Helm chart for deploying [Ansible Automation Platform](https://www.redhat.com/en/technologies/management/ansible) on Red Hat OpenShift. Compatible with **AAP 2.5 and 2.6+**.
+A community Helm chart for deploying [Ansible Automation Platform](https://www.redhat.com/en/technologies/management/ansible) on Red Hat OpenShift. Targets **AAP 2.5, 2.6, and 2.7**; see the validation status below for 2.7.
 
 The chart renders a single `AnsibleAutomationPlatform` CR. The AAP Operator reconciles it and manages all child resources (AutomationController, EDA, Hub, database, Redis). You bring the values — the operator does the rest.
 
@@ -143,6 +143,22 @@ Refer to the CRD definitions in [`crds/`](./crds/) for all available fields per 
 >     node_selector: '{"node-role.kubernetes.io/worker":""}'
 > ```
 
+## AAP 2.7 validation
+
+The current `values.schema.json` is generated from the checked-in AAP 2.7 CRDs. All 14 example values files pass strict lint and template rendering with Helm 4.2.2. Cluster admission and operator reconciliation on 2.7 still need verification; local validation alone does not establish runtime compatibility.
+
+Important differences when targeting AAP 2.7:
+
+- EDA uses dispatcherd backed by PostgreSQL instead of Redis. `eda.redis`, EDA Redis image overrides, and `redis.eda_redis_secret` are deprecated and ignored. Gateway and Hub Redis configuration remains available.
+- `eda.scheduler` is removed from the EDA CRD. Remove that block from `examples/testing-full-stack.yaml` when using it with 2.7.
+- Image overrides must be paired with their corresponding version fields where required by the CRDs, for example `image` with `image_version`.
+- Controller, Hub, and EDA no longer declare `Route` as the CRD default for `ingress_type`.
+- Platform `gateway_timeouts` and `metrics` can be supplied through `extraSpec`; new EDA and Hub fields can be supplied through component pass-through.
+
+The schema currently allows unknown fields in most sections and does not enforce Kubernetes CEL rules. Removed fields and incomplete image/version pairs can therefore pass Helm validation. Validate rendered manifests against the target cluster and check reconciliation before relying on a deployment.
+
+The chart does not yet select validation rules by operator version. The checked-in 2.5 and 2.6 CRD snapshots are byte-for-byte identical; their provenance should be verified before relying on them for version-specific compatibility.
+
 ## Database
 
 ### Internal (default)
@@ -174,6 +190,8 @@ database:
 The Secret must contain: `host`, `port`, `database`, `username`, `password`.
 
 ## Redis
+
+AAP 2.7 removes Redis usage from EDA only; Gateway and Hub retain Redis configuration.
 
 By default the operator deploys a standalone Redis pod. Override with an external instance:
 
@@ -320,13 +338,21 @@ bash hack/setup-hooks.sh
 
 This installs a pre-commit hook that runs `helm-docs` (keeps README in sync with `values.yaml`) and `helm lint --strict` before every commit. Requires `helm` and `helm-docs` (`brew install helm-docs`).
 
+After updating CRDs, regenerate the schema before committing:
+
+```bash
+python3 hack/gen-schema.py --version 2.7
+```
+
+Omitting `--version` selects the highest numeric CRD directory. CI regenerates the schema with that default and rejects stale output.
+
 ## Versioning
 
-Chart versioning is independent of the AAP operator version. A single chart works across AAP 2.5 and 2.6+.
+Chart versioning is independent of the AAP operator version. The chart targets AAP 2.5, 2.6, and 2.7. Validation currently follows the 2.7 CRD snapshot; version-specific validation is not implemented.
 
 | Chart version | AAP compatibility |
 |---------------|-------------------|
-| `1.3.x` | AAP 2.5, 2.6 — adds VSO secret provider |
+| `1.3.x` | AAP 2.5, 2.6; current source includes 2.7 schema updates with local validation only. Adds VSO secret provider. |
 | `1.2.x` | AAP 2.5, 2.6 |
 | `1.0.x` | AAP 2.5, 2.6 |
 
