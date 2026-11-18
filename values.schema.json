@@ -425,6 +425,20 @@
         }
       }
     },
+    "proxy": {
+      "type": "object",
+      "properties": {
+        "resource_requirements": {
+          "$ref": "#/definitions/resourceRequirements"
+        },
+        "concurrency": {
+          "type": "integer"
+        },
+        "security_context": {
+          "type": "object"
+        }
+      }
+    },
     "database": {
       "type": "object",
       "properties": {

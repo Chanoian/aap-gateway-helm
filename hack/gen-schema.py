@@ -116,7 +116,7 @@ CHART_ONLY = {
 # These are skipped in the top-level scalar walk and handled individually below
 # (each section may draw from a different CRD source, e.g. hub uses automationhubs.yaml).
 # Add a key here when you add a new structured sub-section to values.yaml.
-SECTIONS = {"api", "database", "redis", "controller", "eda", "hub", "secretProvider"}
+SECTIONS = {"api", "proxy", "database", "redis", "controller", "eda", "hub", "secretProvider"}
 
 
 # ── Schema derivation ─────────────────────────────────────────────────────────
@@ -248,6 +248,7 @@ for key, value in values.items():
 
 # Structured sections — each walked against its CRD source
 properties["api"]        = build_section(values["api"],        aap.get("api",      {}).get("properties", {}))
+properties["proxy"]      = build_section(values["proxy"],      aap.get("proxy",    {}).get("properties", {}))
 properties["database"]   = build_section(values["database"],   aap.get("database", {}).get("properties", {}))
 properties["redis"]      = build_section(values["redis"],      aap.get("redis",    {}).get("properties", {}))
 

@@ -1,0 +1,46 @@
+# ── Pod placement — gateway, controller web, controller task ──────────────────
+# Spreads each component across unique nodes.
+#
+# Gateway: the AnsibleAutomationPlatform CRD has NO affinity field for the
+#   gateway (checked up to 2.6.0-0.1793870311). Use topology_spread_constraints
+#   instead — maxSkew 1 on kubernetes.io/hostname = at most one extra pod per node.
+# Controller: AutomationController exposes web_affinity / task_affinity as native
+#   objects (nodeAffinity / podAffinity / podAntiAffinity); passed through as-is.
+#
+# Verify the label values against your cluster before using:
+#   oc get pods -n aap --show-labels | grep -E "gateway|controller-(web|task)"
+
+name: aap
+namespace: aap
+
+api:
+  replicas: 2
+  topology_spread_constraints:
+    - maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule      # strict; use ScheduleAnyway for best-effort
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: aap-gateway
+
+controller:
+  web_replicas: 2
+  task_replicas: 2
+  # Never schedule two web pods on the same node
+  web_affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: aap-controller-web
+  # Prefer spreading task pods across nodes (soft rule)
+  task_affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: kubernetes.io/hostname
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: aap-controller-task

@@ -566,6 +566,15 @@ spec:
                 x-kubernetes-validations:
                 - message: All feature flag keys must start with 'FEATURE_'.
                   rule: self.exists(k, k.startsWith('FEATURE_'))
+              gateway_tls_enabled:
+                default: false
+                description: Enable the HTTPS listener on the Automation Gateway service.
+                type: boolean
+              gateway_tls_secret_name:
+                default: ''
+                description: Name of the TLS Secret containing tls.crt and tls.key
+                  for the Gateway HTTPS listener.
+                type: string
               hostname:
                 description: Override default hostname of the Ansible Automation Platform
                 type: string
@@ -639,7 +648,9 @@ spec:
                 description: Port to use for the loadbalancer
                 type: integer
               loadbalancer_protocol:
-                description: Protocol to use for the loadbalancer
+                description: Protocol used by the client-to-LoadBalancer connection.
+                  When Gateway TLS is enabled, configure the LoadBalancer backend
+                  connection separately for HTTPS or TLS passthrough.
                 enum:
                 - http
                 - https
@@ -656,6 +667,11 @@ spec:
                 default: true
                 description: Configure no_log for no_log tasks
                 type: boolean
+              nodeport_port:
+                description: Fixed port to use for NodePort configuration, for service_type
+                  NodePort or LoadBalancer. If unset, a port is auto-assigned from
+                  the cluster's configured NodePort range.
+                type: integer
               postgres_image:
                 description: Registry path to the PostgreSQL container to use
                 type: string
@@ -941,6 +957,18 @@ spec:
                 or both must be unset
               rule: has(self.redis_image) && has(self.redis_image_version) || !has(self.redis_image)
                 && !has(self.redis_image_version)
+            - message: gateway_tls_enabled requires ingress_type none or an OpenShift
+                Route with passthrough TLS termination
+              rule: '!has(self.gateway_tls_enabled) || self.gateway_tls_enabled !=
+                true || (has(self.ingress_type) && self.ingress_type == ''none'')
+                || ((!has(self.ingress_type) || self.ingress_type in [''Route'', ''route''])
+                && has(self.route_tls_termination_mechanism) && self.route_tls_termination_mechanism
+                in [''Passthrough'', ''passthrough''])'
+            - message: gateway_tls_secret_name must be set when gateway_tls_enabled
+                is true
+              rule: '!has(self.gateway_tls_enabled) || self.gateway_tls_enabled !=
+                true || (has(self.gateway_tls_secret_name) && self.gateway_tls_secret_name
+                != '''')'
           status:
             description: Status defines the observed state of AnsibleAutomationPlatform
             properties:

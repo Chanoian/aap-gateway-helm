@@ -105,7 +105,7 @@ api:
   replicas: 1
   # -- Python logging level. One of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`.
   log_level: INFO
-  # -- CPU/memory requests and limits for Gateway API pods.
+  # -- CPU/memory requests and limits for the Gateway `api` container. On operator builds before 2.6.0-0.1793870311 (and on 2.5) this value is ALSO applied to the `proxy` container, so the pod total is ~2x this value; on newer builds set `proxy.resource_requirements` to size the proxy separately.
   resource_requirements:
     requests:
       cpu: ""
@@ -117,10 +117,27 @@ api:
   node_selector: {}
   # -- Tolerations for Gateway API pods.
   tolerations: []
-  # -- Topology spread constraints for Gateway API pods.
+  # -- Topology spread constraints for Gateway API pods. The gateway CRD has no `affinity` field; use this to place gateway pods on unique nodes (`topologyKey: kubernetes.io/hostname`, `maxSkew: 1`). See `examples/pod-placement.yaml`.
   topology_spread_constraints: []
   # -- Deployment update strategy.
   strategy: {}
+
+# ── Gateway proxy (Envoy) container ───────────────────────────────────────────
+# Requires AAP 2.6 operator build 2.6.0-0.1793870311 or later. Leave empty on older builds / AAP 2.5.
+
+proxy:
+  # -- CPU/memory requests and limits for the gateway `proxy` (Envoy) container. When empty, older operator builds reuse `api.resource_requirements` for this container.
+  resource_requirements:
+    requests:
+      cpu: ""
+      memory: ""
+    limits:
+      cpu: ""
+      memory: ""
+  # -- Number of Envoy worker threads. `0` = one per CPU core (Envoy default) and is not emitted. Set a positive value to cap threads on high-core-count nodes.
+  concurrency: 0
+  # -- securityContext applied to the proxy container.
+  security_context: {}
 
 # ── Gateway Database ──────────────────────────────────────────────────────────
 

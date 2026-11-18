@@ -334,10 +334,10 @@ database:
 | api.log_level | string | `"INFO"` | Python logging level. One of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`. |
 | api.node_selector | object | `{}` | Node selector for Gateway API pods. |
 | api.replicas | int | `1` | Number of Gateway API pod replicas. |
-| api.resource_requirements | object | `{"limits":{"cpu":"","memory":""},"requests":{"cpu":"","memory":""}}` | CPU/memory requests and limits for Gateway API pods. |
+| api.resource_requirements | object | `{"limits":{"cpu":"","memory":""},"requests":{"cpu":"","memory":""}}` | CPU/memory requests and limits for the Gateway `api` container. On operator builds before 2.6.0-0.1793870311 (and on 2.5) this value is ALSO applied to the `proxy` container, so the pod total is ~2x this value; on newer builds set `proxy.resource_requirements` to size the proxy separately. |
 | api.strategy | object | `{}` | Deployment update strategy. |
 | api.tolerations | list | `[]` | Tolerations for Gateway API pods. |
-| api.topology_spread_constraints | list | `[]` | Topology spread constraints for Gateway API pods. |
+| api.topology_spread_constraints | list | `[]` | Topology spread constraints for Gateway API pods. The gateway CRD has no `affinity` field; use this to place gateway pods on unique nodes (`topologyKey: kubernetes.io/hostname`, `maxSkew: 1`). See `examples/pod-placement.yaml`. |
 | bundle_cacert_secret | string | `""` | Name of a Secret containing a custom CA bundle for TLS verification. |
 | controller.disabled | bool | `false` | Set `true` to disable AutomationController. |
 | controller.extra_settings | list | `[]` | Extra settings injected into controller config. Each item: `{setting: "name", value: "value"}`. |
@@ -394,6 +394,9 @@ database:
 | no_log | bool | `true` | Suppress sensitive output in operator logs. |
 | postgres_image | string | `""` | Override the operator-default PostgreSQL image. |
 | postgres_image_version | string | `""` | Override the operator-default PostgreSQL image tag. |
+| proxy.concurrency | int | `0` | Number of Envoy worker threads. `0` = one per CPU core (Envoy default) and is not emitted. Set a positive value to cap threads on high-core-count nodes. |
+| proxy.resource_requirements | object | `{"limits":{"cpu":"","memory":""},"requests":{"cpu":"","memory":""}}` | CPU/memory requests and limits for the gateway `proxy` (Envoy) container. When empty, older operator builds reuse `api.resource_requirements` for this container. |
+| proxy.security_context | object | `{}` | securityContext applied to the proxy container. |
 | public_base_url | string | `""` | Override the public base URL if different from hostname. |
 | redhat_registry | string | `""` | Override the default Red Hat registry (`registry.redhat.io`). |
 | redhat_registry_ns | string | `""` | Override the default registry namespace. |

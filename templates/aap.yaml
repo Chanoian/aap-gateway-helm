@@ -93,6 +93,15 @@
 {{- if .Values.api.strategy }}{{- $_ := set $api "strategy" .Values.api.strategy }}{{- end }}
 {{- $_ := set $spec "api" $api }}
 
+{{- /* ── proxy sub-spec (gateway Envoy container) — omit when unset so older
+     operator builds that lack spec.proxy are unaffected ──────────────────── */}}
+{{- $proxy := dict }}
+{{- $proxyRR := include "aap-gateway.resourceRequirements" .Values.proxy.resource_requirements | fromYaml }}
+{{- if gt (len $proxyRR) 0 }}{{- $_ := set $proxy "resource_requirements" $proxyRR }}{{- end }}
+{{- if gt (int .Values.proxy.concurrency) 0 }}{{- $_ := set $proxy "concurrency" (int .Values.proxy.concurrency) }}{{- end }}
+{{- if .Values.proxy.security_context }}{{- $_ := set $proxy "security_context" .Values.proxy.security_context }}{{- end }}
+{{- if gt (len $proxy) 0 }}{{- $_ := set $spec "proxy" $proxy }}{{- end }}
+
 {{- /* ── database sub-spec — only emit non-false booleans and set strings ─── */}}
 {{- $db := dict }}
 {{- if .Values.database.postgres_data_volume_init }}{{- $_ := set $db "postgres_data_volume_init" true }}{{- end }}

@@ -1,0 +1,26 @@
+# ── Gateway api + proxy sized independently ───────────────────────────────────
+# Requires AAP 2.6 operator build 2.6.0-0.1793870311 or later (spec.proxy).
+# On older builds api.resource_requirements is applied to BOTH containers.
+
+name: aap
+namespace: aap
+
+api:
+  replicas: 2
+  resource_requirements:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
+
+proxy:
+  resource_requirements:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "1"
+      memory: "512Mi"
+  concurrency: 4   # cap Envoy worker threads on high-core nodes
