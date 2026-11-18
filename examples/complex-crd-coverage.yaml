@@ -54,7 +54,8 @@ api:
       whenUnsatisfiable: ScheduleAnyway
       labelSelector:
         matchLabels:
-          app.kubernetes.io/name: aap-gateway
+          app.kubernetes.io/name: aap-complex              # = CR name (metadata.name)
+          app.kubernetes.io/component: aap-gateway   # fixed by the operator
   strategy:
     type: RollingUpdate
     rollingUpdate:

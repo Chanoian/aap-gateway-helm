@@ -21,7 +21,8 @@ api:
       whenUnsatisfiable: DoNotSchedule      # strict; use ScheduleAnyway for best-effort
       labelSelector:
         matchLabels:
-          app.kubernetes.io/name: aap-gateway
+          app.kubernetes.io/name: aap              # = CR name (metadata.name)
+          app.kubernetes.io/component: aap-gateway   # fixed by the operator
 
 controller:
   web_replicas: 2

@@ -145,7 +145,17 @@ Refer to the CRD definitions in [`crds/`](./crds/) for all available fields per 
 
 ## AAP 2.7 validation
 
-The current `values.schema.json` is generated from the checked-in AAP 2.7 CRDs, fetched from operator build `2.7.0-0.1794269743`. All 17 example values files pass strict lint and template rendering. Cluster admission and operator reconciliation on 2.7 still need verification; local validation alone does not establish runtime compatibility.
+The current `values.schema.json` is generated from the checked-in AAP 2.7 CRDs, fetched from operator build `2.7.0-0.1794269743`. All 17 example values files pass strict lint and template rendering, and six of them (`minimal`, `pod-placement`, `gateway-proxy-resources`, `full-stack`, `testing-full-stack`, `complex-crd-coverage`) pass server-side admission on a live 2.7 cluster.
+
+`examples/pod-placement.yaml` combined with `examples/gateway-proxy-resources.yaml` (hub disabled) was deployed on operator `2.7.0-0.1794269743` and fully reconciled: gateway, controller web/task, EDA, and metrics service pods all reached Ready. Verified on the running Deployments:
+
+- `proxy.resource_requirements` and `proxy.concurrency` are applied to the gateway `proxy` container, independently of `api.resource_requirements`.
+- `api.topology_spread_constraints` is applied to the gateway Deployment.
+- `controller.web_affinity` / `controller.task_affinity` propagate through the AutomationController CR to the web and task Deployments.
+
+Pod labels to use in affinity/topology selectors: gateway pods carry `app.kubernetes.io/name: <CR name>` and `app.kubernetes.io/component: aap-gateway`; controller pods carry `app.kubernetes.io/name: <CR name>-controller-web` / `<CR name>-controller-task`.
+
+Hub was not runtime-tested on 2.7 (its default file storage requires ReadWriteMany).
 
 Important differences when targeting AAP 2.7:
 
@@ -157,6 +167,7 @@ Important differences when targeting AAP 2.7:
 - The gateway Envoy container can be sized independently through `proxy:` (also available on 2.6 builds from `2.6.0-0.1793870311`).
 - EDA components (`api`, `ui`, `worker`, `default_worker`, `activation_worker`, `event_stream`) accept a native `affinity` object. The gateway (`api`) still has no affinity field; use `api.topology_spread_constraints`.
 - Hub accepts `secret_key_secret`.
+- 2.7 deploys an AutomationMetricsService by default; configure it through `extraSpec.metrics`.
 
 The schema currently allows unknown fields in most sections and does not enforce Kubernetes CEL rules. Removed fields and incomplete image/version pairs can therefore pass Helm validation. Validate rendered manifests against the target cluster and check reconciliation before relying on a deployment.
 
@@ -456,7 +467,7 @@ Chart versioning is independent of the AAP operator version. The chart targets A
 
 | Chart version | AAP compatibility |
 |---------------|-------------------|
-| `1.3.x` | AAP 2.5, 2.6; current source includes 2.7 schema updates with local validation only. Adds VSO secret provider. |
+| `1.3.x` | AAP 2.5, 2.6; current source includes 2.7 schema updates, runtime-validated on operator `2.7.0-0.1794269743` (hub not runtime-tested). Adds VSO secret provider. |
 | `1.2.x` | AAP 2.5, 2.6 |
 | `1.0.x` | AAP 2.5, 2.6 |
 
