@@ -178,7 +178,7 @@
       "type": "integer"
     },
     "loadbalancer_protocol": {
-      "description": "Protocol to use for the loadbalancer",
+      "description": "Protocol used by the client-to-LoadBalancer connection. When Gateway TLS is enabled, configure the LoadBalancer backend connection separately for HTTPS or TLS passthrough.",
       "enum": [
         "http",
         "https"
@@ -432,10 +432,14 @@
           "$ref": "#/definitions/resourceRequirements"
         },
         "concurrency": {
+          "description": "Number of Envoy worker threads. 0 means one per CPU core (Envoy default). Set this to limit worker threads on high-core-count nodes.",
+          "minimum": 0,
           "type": "integer"
         },
         "security_context": {
-          "type": "object"
+          "description": "Settings to apply to the securityContext field of the proxy container.",
+          "type": "object",
+          "x-kubernetes-preserve-unknown-fields": true
         }
       }
     },
@@ -11022,6 +11026,10 @@
             "Passthrough",
             "passthrough"
           ],
+          "type": "string"
+        },
+        "secret_key_secret": {
+          "description": "Secret where the Django SECRET_KEY is stored",
           "type": "string"
         },
         "service_annotations": {

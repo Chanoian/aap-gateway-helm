@@ -1468,6 +1468,9 @@ spec:
                 - Passthrough
                 - passthrough
                 type: string
+              secret_key_secret:
+                description: Secret where the Django SECRET_KEY is stored
+                type: string
               service_annotations:
                 description: Annotations to add to the service
                 type: string
@@ -2450,6 +2453,10 @@ spec:
               migrantDatabaseConfigurationSecret:
                 description: The configuration secret used for migrating an old deployment
                 type: string
+              secretKeySecret:
+                description: The name of the secret used for the Django SECRET_KEY
+                  setting
+                type: string
               signingSecret:
                 description: Secret where the signing certificates are stored
                 type: string
@@ -2478,3 +2485,4 @@ spec:
     storage: true
     subresources:
       status: {}
+

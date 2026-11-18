@@ -145,7 +145,7 @@ Refer to the CRD definitions in [`crds/`](./crds/) for all available fields per 
 
 ## AAP 2.7 validation
 
-The current `values.schema.json` is generated from the checked-in AAP 2.7 CRDs. All 14 example values files pass strict lint and template rendering with Helm 4.2.2. Cluster admission and operator reconciliation on 2.7 still need verification; local validation alone does not establish runtime compatibility.
+The current `values.schema.json` is generated from the checked-in AAP 2.7 CRDs, fetched from operator build `2.7.0-0.1794269743`. All 17 example values files pass strict lint and template rendering. Cluster admission and operator reconciliation on 2.7 still need verification; local validation alone does not establish runtime compatibility.
 
 Important differences when targeting AAP 2.7:
 
@@ -153,11 +153,14 @@ Important differences when targeting AAP 2.7:
 - `eda.scheduler` is removed from the EDA CRD. Remove that block from `examples/testing-full-stack.yaml` when using it with 2.7.
 - Image overrides must be paired with their corresponding version fields where required by the CRDs, for example `image` with `image_version`.
 - Controller, Hub, and EDA no longer declare `Route` as the CRD default for `ingress_type`.
-- Platform `gateway_timeouts` and `metrics` can be supplied through `extraSpec`; new EDA and Hub fields can be supplied through component pass-through.
+- Platform `gateway_timeouts`, `metrics`, `gateway_tls_enabled`, `gateway_tls_secret_name`, and `nodeport_port` can be supplied through `extraSpec`; new EDA and Hub fields can be supplied through component pass-through.
+- The gateway Envoy container can be sized independently through `proxy:` (also available on 2.6 builds from `2.6.0-0.1793870311`).
+- EDA components (`api`, `ui`, `worker`, `default_worker`, `activation_worker`, `event_stream`) accept a native `affinity` object. The gateway (`api`) still has no affinity field; use `api.topology_spread_constraints`.
+- Hub accepts `secret_key_secret`.
 
 The schema currently allows unknown fields in most sections and does not enforce Kubernetes CEL rules. Removed fields and incomplete image/version pairs can therefore pass Helm validation. Validate rendered manifests against the target cluster and check reconciliation before relying on a deployment.
 
-The chart does not yet select validation rules by operator version. The 2.6 snapshots were refreshed from the installed `stable-2.6` operator build `2.6.0+0.1789677985` on OpenShift `4.22.15` on 2026-10-01. They include new Platform `metrics` and `proxy` fields, Hub PostgreSQL/Redis image-version fields, and image/version pairing validations for Platform, Hub, EDA, and Lightspeed. Lightspeed also removes the default for the deprecated `postgres_keep_pvc_after_upgrade` field. These snapshots are reference definitions; the operator manages the cluster CRDs. The 2.5 snapshot provenance remains unverified.
+The chart does not yet select validation rules by operator version. The 2.6 snapshots were refreshed from operator build `2.6.0-0.1793870311` and the 2.7 snapshots from `2.7.0-0.1794269743` (both on 2026-11-18). Compared with earlier 2.6 builds they include Platform `metrics`, `proxy`, `gateway_tls_enabled`, `gateway_tls_secret_name`, and `nodeport_port` fields, Hub PostgreSQL/Redis image-version fields, and image/version pairing validations for Platform, Hub, EDA, and Lightspeed. Lightspeed also removes the default for the deprecated `postgres_keep_pvc_after_upgrade` field. These snapshots are reference definitions; the operator manages the cluster CRDs. The 2.5 snapshot provenance remains unverified.
 
 ## Database
 
